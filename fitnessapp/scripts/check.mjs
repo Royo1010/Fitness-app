@@ -11,6 +11,6 @@ for (const week of ['1', '2']) {
     for (const spec of specs) if (!program.exercises[spec.exercise_id]) throw new Error('Oefenbeschrijving ontbreekt');
   }
 }
-for (const file of ['index.html', 'app.mjs', 'core.mjs', 'storage.mjs', 'styles.css', 'program.json', 'sw.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png']) if (!existsSync('dist/' + file)) throw new Error('Ontbrekend appbestand: ' + file);
+for (const file of ['index.html', 'app.mjs', 'core.mjs', 'storage.mjs', 'styles.css', 'training.css', 'program.json', 'sw.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png']) if (!existsSync('dist/' + file)) throw new Error('Ontbrekend appbestand: ' + file);
 JSON.parse(readFileSync('dist/manifest.webmanifest', 'utf8'));
 console.log('Buildcontrole geslaagd: alle modules, 8 trainingen, 35 oefenbeschrijvingen en PWA-assets aanwezig.');

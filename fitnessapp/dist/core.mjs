@@ -1,6 +1,6 @@
 export const ZONE = 'Europe/Amsterdam';
 export const SCHEMA = 1;
-export const DAYS = ['upper_a', 'lower_a', 'upper_b', 'lower_b'];
+export const DAYS = ['lower_a', 'upper_a', 'lower_b', 'upper_b'];
 const DAY_MS = 86400000;
 const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
 
@@ -28,6 +28,50 @@ export function weekFor(anchor, now = new Date()) {
   const monday = mondayOf(date);
   const weeks = Math.round((Date.parse(monday + 'T12:00:00Z') - Date.parse(anchor + 'T12:00:00Z')) / DAY_MS / 7);
   return { monday, sunday: addDays(monday, 6), variant: ((weeks % 2) + 2) % 2 + 1, weeks };
+}
+export const PROGRAM_START = '2026-11-30';
+export function isoWeek(date = localDate()) {
+  const thursday = addDays(mondayOf(date), 3);
+  const year = Number(thursday.slice(0, 4));
+  const firstMonday = mondayOf(`${year}-01-04`);
+  const number = Math.round((Date.parse(mondayOf(date)) - Date.parse(firstMonday)) / DAY_MS / 7) + 1;
+  return { number, year };
+}
+export function trainingWeek(date = localDate()) {
+  const w = weekFor(PROGRAM_START, date);
+  const official = w.monday >= PROGRAM_START;
+  return { ...w, variant: official ? w.variant : 1, official, trainingNumber: official ? w.weeks + 1 : null, iso: isoWeek(w.monday) };
+}
+export function trainingTitle(day, variant) {
+  return ({ lower_a: 'Lower A', upper_a: 'Upper A', lower_b: 'Lower B', upper_b: 'Upper B' })[day] + variant;
+}
+export function recordedBefore(sessions, asOf = localDate()) { return sessions.filter(s => s.date <= asOf); }
+export function trainingSelection(sessions, week = trainingWeek(), asOf = localDate()) {
+  const eligible = sessions.filter(s => week.official && s.date <= asOf && s.weekMonday === week.monday && s.variant === week.variant);
+  const rows = DAYS.map(day => {
+    const matches = eligible.filter(s => s.day === day).sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
+    const completed = matches.some(s => s.status === 'completed');
+    const current = matches.filter(s => s.status !== 'completed').at(-1) || matches.at(-1) || null;
+    return { day, title: trainingTitle(day, week.variant), completed, session: current };
+  });
+  return { rows, completed: rows.filter(r => r.completed).length, next: rows.find(r => !r.completed)?.day ?? null };
+}
+export function canRegister(date, today = localDate()) {
+  return isDate(date) && date >= PROGRAM_START && date <= today;
+}
+export function suggestedSet(entry, index, sessions, context) {
+  const latest = exerciseStats(sessions, entry.exerciseId, { excludeSession: context.id, before: context.date, basis: entry.measurement.basis }).latest;
+  const history = latest?.sets[index] || latest?.sets.at(-1);
+  const target = Number(entry.prescription.reps.match(/\d+/)?.[0]) || null;
+  const result = {};
+  for (const field of ['kg', 'reps', 'seconds', 'meters']) result[field] = entry.sets[index]?.[field] ?? entry.sets.slice(0, index).findLast(s => !s.skipped && s[field] !== null)?.[field] ?? history?.[field] ?? (field === 'reps' && !['duration', 'distance'].includes(entry.measurement.kind) ? target : field === 'seconds' && entry.measurement.kind === 'duration' ? target : field === 'meters' && entry.measurement.kind === 'distance' ? target : null);
+  return result;
+}
+export function adjustNumber(value, direction, step, field = 'kg') {
+  const n = parseNumber(value);
+  if (Number.isNaN(n) || ![1, -1].includes(direction) || !Number.isFinite(step) || step <= 0) throw new Error('Ongeldige invoerstap.');
+  const result = Math.min(1000000, Math.max(0, Math.round(((n ?? 0) + direction * step) * 1000) / 1000));
+  return field === 'reps' ? Math.round(result) : result;
 }
 export function parseNumber(value) {
   if (value === null || value === undefined || String(value).trim() === '') return null;
@@ -64,7 +108,7 @@ export function exerciseEntry(program, spec, optional = false) {
 export function createSession(program, day, variant, date = localDate()) {
   if (!DAYS.includes(day) || ![1, 2].includes(variant) || !isDate(date)) throw new Error('Ongeldige training.');
   const time = new Date().toISOString();
-  return { id: uid(), schemaVersion: SCHEMA, programVersion: program.metadata.version, timeZone: ZONE, date, weekMonday: mondayOf(date), day, variant, title: program.days[day] + (variant === 2 ? '2' : ''), status: 'active', startedAt: time, updatedAt: time, completedAt: null, note: '', warmup: program.warmup[day.startsWith('upper') ? 'upper' : 'lower'], safety: program.metadata.safety, exercises: program.week_programs[variant][day].map(s => exerciseEntry(program, s)) };
+  return { id: uid(), schemaVersion: SCHEMA, programVersion: program.metadata.version, timeZone: ZONE, date, weekMonday: mondayOf(date), day, variant, title: trainingTitle(day, variant), status: 'active', startedAt: time, updatedAt: time, completedAt: null, note: '', warmup: program.warmup[day.startsWith('upper') ? 'upper' : 'lower'], safety: program.metadata.safety, exercises: program.week_programs[variant][day].map(s => exerciseEntry(program, s)) };
 }
 export function validSet(set, m) {
   if (!set.completed || set.skipped || set.kind !== 'work') return false;
@@ -105,7 +149,7 @@ export function exerciseStats(sessions, id, options = {}) {
   // A basis is immutable for each exercise ID. Imported older definitions remain separate.
   const basis = options.basis ?? runs.at(-1)?.basis;
   const filtered = runs.filter(r => r.basis === basis);
-  if (!filtered.length) return { runs: [], pr: null, average: null, recentAverage: null, latest: null, sets: 0, records: [], load: null };
+  if (!filtered.length) return { runs: [], pr: null, average: null, recentAverage: null, averageReps: null, latest: null, sets: 0, records: [], load: null };
   const metric = metricFor(filtered[0].measurement);
   const all = filtered.flatMap(r => r.sets.map(s => ({ ...s, date: r.date, sessionId: r.sessionId })));
   const pr = all.reduce((best, s) => !best || s[metric] > best[metric] ? s : best, null);
@@ -113,7 +157,7 @@ export function exerciseStats(sessions, id, options = {}) {
   const records = filtered.flatMap(r => { const max = Math.max(...r.sets.map(s => s[metric])); if (max <= best) return []; best = max; return [{ date: r.date, value: max, sessionId: r.sessionId }]; });
   const loaded = all.filter(s => s.kg !== null);
   const load = loaded.length ? { pr: loaded.reduce((best, s) => !best || s.kg > best.kg ? s : best, null), average: mean(loaded.map(s => s.kg)), recentAverage: mean(filtered.slice(-5).flatMap(r => r.sets.filter(s => s.kg !== null).map(s => s.kg))) } : null;
-  return { runs: filtered, pr, average: mean(all.map(s => s[metric])), recentAverage: mean(filtered.slice(-5).flatMap(r => r.sets.map(s => s[metric]))), latest: filtered.at(-1), sets: all.length, records, load };
+  return { runs: filtered, pr, average: mean(all.map(s => s[metric])), recentAverage: mean(filtered.slice(-5).flatMap(r => r.sets.map(s => s[metric]))), averageReps: mean(all.filter(s => s.reps !== null).map(s => s.reps)), latest: filtered.at(-1), sets: all.length, records, load };
 }
 export function weekProgress(sessions, monday, variant) {
   return DAYS.filter(day => sessions.some(s => s.weekMonday === monday && s.variant === variant && s.day === day && s.status === 'completed')).length;
@@ -136,6 +180,7 @@ export function validateState(state) {
   assert(plain(state.settings) && ['light', 'dark', 'system'].includes(state.settings.theme), 'instellingen ontbreken.');
   const anchor = state.settings.anchorMonday;
   assert(anchor === null || (isDate(anchor) && mondayOf(anchor) === anchor), 'de startdatum moet een maandag zijn.');
+  if (state.settings.weightSteps !== undefined) assert(plain(state.settings.weightSteps) && Object.entries(state.settings.weightSteps).every(([k, v]) => textOk(k, 100) && [.5, 1, 2.5, 5].includes(v)), 'ongeldige gewichtsstap.');
   assert(Array.isArray(state.sessions) && state.sessions.length <= 50000, 'trainingen ontbreken of bestand te groot.');
   const ids = new Set();
   for (const session of state.sessions) {
@@ -184,5 +229,6 @@ export function mergeBackup(current, incoming, mode = 'merge') {
   if (mode === 'replace') return { ...imported, revision: current.revision };
   if (mode !== 'merge') throw new Error('Onbekende importmethode.');
   const known = new Set(current.sessions.map(s => s.id));
-  return { ...structuredClone(current), settings: current.settings.anchorMonday ? { ...current.settings } : { ...imported.settings }, sessions: [...structuredClone(current.sessions), ...imported.sessions.filter(s => !known.has(s.id))] };
+  const hasCurrentData = current.sessions.length > 0 || current.settings.anchorMonday || current.settings.weightSteps || current.settings.theme !== 'light';
+  return { ...structuredClone(current), settings: hasCurrentData ? { ...current.settings } : { ...imported.settings }, sessions: [...structuredClone(current.sessions), ...imported.sessions.filter(s => !known.has(s.id))] };
 }
