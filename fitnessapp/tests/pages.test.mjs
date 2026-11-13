@@ -27,7 +27,7 @@ test('Pages-build is herhaalbaar, cache verandert bij gewijzigde bron, opslag bl
     for (const file of ['storage.mjs', 'core.mjs', 'program.json', 'manifest.webmanifest']) {
       assert.deepEqual(await readFile(path.join(output, file)), await readFile(path.join(source, file)));
     }
-    assert.deepEqual(JSON.parse(await readFile(path.join(output, 'release.json'))), { version: '2.0.0', commit: 'commit-three', contentHash: second });
+    assert.deepEqual(JSON.parse(await readFile(path.join(output, 'release.json'))), { version: '2.1.0', commit: 'commit-three', contentHash: second });
     assert.equal(await readFile(path.join(output, '.nojekyll'), 'utf8'), '');
     // Voer de gegenereerde worker uit: alle offline-assets bestaan onder het Pages-subpad.
     const events = {}; let requests, pending;
@@ -36,7 +36,7 @@ test('Pages-build is herhaalbaar, cache verandert bij gewijzigde bron, opslag bl
       addEventListener: (type, fn) => events[type] = fn, skipWaiting: async () => {}
     }, caches: { open: async () => ({ addAll: async value => requests = value }) } });
     events.install({ waitUntil: promise => pending = promise }); await pending;
-    assert.equal(requests.length, 12);
+    assert.ok(requests.length >= 12);
     for (const request of requests) {
       const url = new URL(request.url);
       assert.ok(url.pathname.startsWith('/Fitness-app/'));

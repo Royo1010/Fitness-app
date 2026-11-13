@@ -151,3 +151,27 @@
 @media(max-width:360px){.v2 .content{padding-left:9px;padding-right:9px}.v2 .exercise-body{padding-left:9px;padding-right:9px}.v2 .set-head,.v2 .set-row{grid-template-columns:17px minmax(100px,1.12fr) minmax(88px,1fr) 42px;gap:5px}.number-stepper>button{min-width:28px;width:28px}.v2 .set-check{width:42px}.v2 .exercise-top{padding-left:10px;gap:7px}.v2 .exercise-top .exercise-name{font-size:13px}.v2 .finish-bar{align-items:stretch;flex-direction:column}.v2 .finish-bar>.row{justify-content:flex-end}.schema-row{gap:9px;padding:15px 11px}.schema-row .schema-status{font-size:9px}}
 
 .update-notice{align-items:center;gap:10px;margin-bottom:16px}.update-notice p{flex:1}.update-notice .link-btn{white-space:nowrap}
+
+/* Ritme 2.1: één beste set en een rustige oefenchecklist. */
+.training-home .training-content{padding-top:max(18px,env(safe-area-inset-top));padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+.v2 .exercise-list{gap:10px}
+.v2 .exercise-compact{scroll-margin-top:max(12px,env(safe-area-inset-top))}
+.v2 .exercise-compact.exercise-done{background:var(--soft);border-color:transparent}
+.v2 .exercise-done .exercise-name{color:var(--muted)}
+.v2 .exercise-done .exercise-number{background:var(--green);color:var(--card)}
+.v2 .exercise-top{padding-top:6px}
+.v2 .exercise-compact>.exercise-prescription{padding-left:15px;font-size:11px}
+.v2 .exercise-body{padding:0 12px 12px}
+.best-label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:600;margin-top:13px}
+.best-label>span{font-size:9px;font-weight:400;color:var(--muted);text-align:right}
+.v2 .set-head,.v2 .set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px;gap:8px}
+.v2 .set-head{margin:7px 0 3px}.v2 .set-row{margin:0}
+.v2 .number-stepper>button{width:32px;min-width:28px}
+.v2 .set-row .set-check{border-radius:9px}
+.checklist-complete{padding:15px;font-size:12px;background:var(--soft);border-radius:12px;margin-top:14px;color:var(--green)}
+.exercise-illustration{margin:16px 0;background:var(--soft);border-radius:12px;overflow:hidden}
+.exercise-illustration img{display:block;width:100%;height:auto;max-height:240px;object-fit:contain}
+.exercise-illustration figcaption{padding:0 12px 12px;font-size:10px;color:var(--muted)}
+.legacy-sets{margin:16px 0;font-size:12px;line-height:1.8}
+.legacy-sets summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+@media(prefers-reduced-motion:reduce){.v2 *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
