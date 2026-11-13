@@ -9,7 +9,10 @@
     "start": "node scripts/serve.mjs",
     "build": "node scripts/check.mjs",
     "test": "node --test tests/*.test.mjs",
-    "lint": "node scripts/check.mjs"
+    "lint": "node scripts/check.mjs",
+    "build:pages": "npm run build && node scripts/build-pages.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }
