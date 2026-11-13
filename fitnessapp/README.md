@@ -77,7 +77,7 @@ Ook beschikbaar als `npm start` of `npm run dev`; een dependency-installatie is 
 
 Alle assetpaden zijn relatief. Het manifest behoudt `id: "./"` en `scope: "./"`; `start_url: "./#home"` opent op Training. Dit werkt onder `/Fitness-app/`. De serviceworker heeft een nieuwe cacheversie, cachet ook `training.css`, begrenst verzoeken en cacheopruiming tot de eigen app en raakt IndexedDB niet aan. Bij een nieuwe versie verschijnt een compacte updateknop; die wacht op lopende opslag voordat er wordt herladen.
 
-**Publicatiestatus:** in deze aangeleverde werkmap is geen GitHub-remote of GitHub Actions-workflow aanwezig. Daarom zijn de daadwerkelijke repository, Pages-publicatiebron en live GitHub-versie nog niet te verifiëren en is er niet naar GitHub gepusht. De oude Sites-configuratie is niet gewijzigd of gepubliceerd. Zie **PUBLICATIE-GITHUB.md** voor de concrete resterende stappen; bestaande correcte hostinginstellingen moeten behouden blijven.
+**GitHub Pages:** de repository is `Royo1010/Fitness-app` en het bestaande adres is `https://royo1010.github.io/Fitness-app/`. De workflow test pull requests en bouwt/publiceert wijzigingen op `main` met `npm run build:pages`. Het artifact in `.pages-dist/` krijgt automatisch een nieuwe PWA-cacheversie bij gewijzigde broncode. Zie **PUBLICATIE-GITHUB.md** voor de onderzochte wachtrij, Pages-instellingen en controle van de gepubliceerde commit.
 
 ## Installeren en offline gebruiken
 

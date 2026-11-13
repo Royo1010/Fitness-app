@@ -1,31 +1,49 @@
-# Ritme 2.0 naar de bestaande GitHub Pages-website
+# Ritme 2.0 publiceren op GitHub Pages
 
-## Wat klaarstaat
+## Bestaande website en gegevens
 
-De bijgewerkte productieversie staat volledig in `dist/`. Paden zijn relatief en zijn lokaal gecontroleerd op `/Fitness-app/`. Het bestaande logboek gebruikt dezelfde IndexedDB-identiteit en hetzelfde back-upformaat. Er is niets gewist, gecommit of naar GitHub gepusht.
+Repository: `Royo1010/Fitness-app`. Website: **https://royo1010.github.io/Fitness-app/**.
+Behoud dit adres, manifest-id `./`, scope `./` en IndexedDB `ritme-fitness`, versie 1, store `data`, sleutel `state`. De publicatie verandert geen trainingsregistraties. Wis geen browsergegevens om een update af te dwingen. Maak voor de zekerheid via Meer → Instellingen & back-ups een JSON-back-up op het apparaat met je logboek.
 
-## Wat nog ontbreekt
+## Vastgesteld op 13 november 2026
 
-De lokale projectmap bevat geen GitHub-remote en geen `.github/workflows/` met de werkelijk gebruikte Pages-workflow. De repository-URL en de GitHub Pages-URL zijn nog niet aangeleverd. Daarom kan de bestaande publicatiebron niet worden geïnspecteerd en is geen live GitHub-publicatie bevestigd.
+- `main` op `05249975c3dd911eb38cf38a6ecfadf137ed47b7` bevat Ritme 2.0, inclusief `training.css`, nieuwe kalenderlogica en regressietests.
+- Alle 25 aanwezige bestanden uit `Ritme-2.0-GitHub.zip` waren bytegelijk aan de checkout. Alleen `.gitignore` en `dist/.nojekyll` ontbraken; die zijn overgenomen. Deze bestanden verklaren geen run die al vóór uitvoering op Queued blijft staan.
+- De patch toegepast op `Ritme-fitnessapp.zip` levert dezelfde actuele appbestanden op. Er staan geen extra appwijzigingen uitsluitend in ZIP of patch. De oude `.openai/hosting.json` is niet nodig voor GitHub Pages en is niet overgenomen.
+- [Run #1](https://github.com/Royo1010/Fitness-app/actions/runs/43085894039) voor commit `dfac0df` slaagde; die commit bevatte versie 1.0.0.
+- [Run #2](https://github.com/Royo1010/Fitness-app/actions/runs/43095816373) voor `0524997` stond bij onderzoek op Queued, zonder artifact of duur. Die run heeft dus nog geen nieuwe website gepubliceerd.
+- De openbare runpagina geeft geen oorzaak voor het wachten. Runnercapaciteit, accountbeperkingen, concurrency en GitHub-storingen zijn zonder job/API-details niet te onderscheiden. De melding “Failed to cancel workflow” bewijst op zichzelf geen fout in de app of YAML.
+- De cloudnetwerkpolicy blokkeerde tijdens dit onderzoek `api.github.com` en `royo1010.github.io`. API-details, Pages-instellingen, annulering en de actuele livebestanden konden daardoor niet worden bevestigd. Domeintoegang is als omgevingsconcept voorgesteld; dat wijzigt de GitHub-repositoryinstellingen niet.
 
-Er is geen nieuwe website, nieuw adres of alternatieve Sites-publicatie gemaakt voor deze update.
+## Nieuwe publicatiewerkwijze
 
-## Bijwerken zodra de repository bekend is
+De actieve workflow staat uitsluitend in `.github/workflows/deploy.yml`. Een oude kopie onder `.github/work/workflows/` is verwijderd; GitHub voerde die kopie niet uit.
 
-1. Open de bestaande GitHub-repository en controleer de werkelijke publicatieworkflow. Gebruik de huidige repository en het bestaande `/Fitness-app/`-adres.
-2. Neem de gewijzigde bronbestanden en de volledige bijgewerkte `dist/` over. Behoud bestaande correcte publicatie-instellingen en workflows.
-3. Voer in de projectmap `npm test` en `npm run build` uit. Er zijn geen npm-dependencies te installeren.
-4. Als de bestaande workflow een vooraf gebouwde distributie publiceert, controleer dat de upload de vernieuwde `dist` gebruikt. Een statisch Pages-artifact wordt via `actions/upload-pages-artifact` aangeboden en via `actions/deploy-pages` gepubliceerd; zie de [officiële GitHub-documentatie](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
-5. Commit en push alleen via de al ingerichte toegang. Wacht op een geslaagde Actions-run en controleer het bestaande websiteadres.
-6. Open de bestaande PWA eenmaal online en gebruik eventueel **App bijwerken**. Controleer daarna Training, Schema en een bestaande historische registratie. Wis geen sitegegevens om een update af te dwingen.
+Bij iedere pull request naar `main` worden Node.js 24, `npm test` en `npm run build:pages` uitgevoerd. Een PR publiceert niets. Na samenvoegen op `main` volgt dezelfde controle en daarna publicatie van **`fitnessapp/.pages-dist`** via het Pages-artifact. Handmatig starten via Actions → Controleer en publiceer Ritme → Run workflow kan ook; alleen `main` mag publiceren.
 
-Als de repository een andere mapstructuur bevat, pas alleen de benodigde bron- en distributiepaden aan. Overschrijf geen bestaande GitHub-workflow met een generiek voorbeeld voordat die is gecontroleerd. De oude `.openai/hosting.json` hoort bij de eerdere afzonderlijke Sites-versie en is niet nodig voor GitHub Pages.
+`dist/` bevat de daadwerkelijke statische broncode; er is geen frameworktranspilatie of npm-installatie. Bewerk die bestanden rechtstreeks, niet alleen een ZIP. `npm run build:pages` controleert de bron en kopieert deze naar de genegeerde uitvoermap `.pages-dist/`. De build geeft de serviceworker een cacheversie gebaseerd op alle bronbestanden, zodat een gewijzigde release automatisch een nieuwe offlinecache krijgt. `release.json` toont versie, commit en inhoudshash voor controle na publicatie. De bronbestanden, manifestidentiteit en opslagcode blijven daarbij intact.
 
-## Controle van de gepubliceerde versie
+Builds mogen oudere builds op dezelfde branch annuleren. Publicaties gebruiken een aparte concurrencygroep en worden niet halverwege geannuleerd. De nieuwe groep deelt geen workflowlock met de oude `github-pages`-groep. Dit is geen bewijs dat een vastgelopen GitHub-run of een probleem met GitHubs runnerdienst daarmee is opgelost. Time-outs begrenzen draaiende jobs; ze begrenzen geen wachttijd vóór toewijzing van een runner.
 
-- De eerste navigatietab heet **Training**.
-- Er staat een direct bewerkbare verticale oefenlijst, zonder welkomstbanner.
-- **Schema** toont Lower A1, Upper A1, Lower B1, Upper B1 in die volgorde; de daaropvolgende kalenderweek gebruikt de 2-varianten.
-- Voor 30 november 2026 toont de app uitsluitend een voorbeeld en maakt de nieuwe interface geen officiële sessies aan.
-- Oude trainingsgegevens zijn beschikbaar via **Meer → Geschiedenis**.
-- De serviceworker en het manifest blijven binnen `/Fitness-app/` en offline openen werkt na de eerste online opening.
+## Eenmalige controle en herstel op GitHub
+
+1. Controleer en merge de pull request naar `main`.
+2. Controleer **Settings → Pages → Build and deployment → Source: GitHub Actions**. Behoud het bestaande websiteadres en eventuele correcte andere instellingen.
+3. Controleer **Actions → Controleer en publiceer Ritme**. De build moet slagen vóór de deploy begint. Controleer bij Waiting of de omgeving `github-pages` een goedkeuring vereist.
+4. Blijft de oude run hangen, probeer als repositorybeheerder annuleren. Als normaal annuleren faalt, kan een beheerder met geschikte Actions-schrijfbevoegdheid de officiële force-cancel-API gebruiken: `gh api --method POST repos/Royo1010/Fitness-app/actions/runs/43095816373/force-cancel`. Doe dit alleen zolang deze specifieke run nog actief is. Een nieuwe run wordt niet automatisch gestart door annulering.
+5. Blijven ook nieuwe jobs vóór uitvoering Queued, bekijk de jobmelding, Settings → Actions → General, account-/Actions-gebruik en [GitHub Status](https://www.githubstatus.com/). Neem bij aanhoudende mislukte annulering contact op met GitHub Support met de runlink. Appcode kan een GitHub-wachtrijprobleem niet zelfstandig herstellen.
+6. Controleer na een geslaagde deploy `https://royo1010.github.io/Fitness-app/release.json`: de commit moet overeenkomen met de gepubliceerde main-commit. Open daarna de bestaande PWA online en kies zo nodig **App bijwerken**. Controleer Training, Schema en bestaande geschiedenis, en vervolgens offline openen. Verwijder geen PWA of sitegegevens.
+
+Vóór **30 november 2026** toont Ritme 2.0 bewust een programmavoorbeeld zonder nieuwe officiële registraties. Dit is geen teken van een mislukte update.
+
+## Lokaal reproduceren
+
+Vanuit `fitnessapp/`:
+
+```sh
+npm test
+npm run build:pages
+npm run dev
+```
+
+De ontwikkelserver gebruikt `dist/`; het publicatie-artifact staat in `.pages-dist/`. De tests controleren ook de gegenereerde serviceworker, de offline-assets onder `/Fitness-app/`, automatisch wisselende cacheversies en ongewijzigde opslagcode. Een succesvolle lokale test is geen bevestiging van een afgeronde GitHub-publicatie.

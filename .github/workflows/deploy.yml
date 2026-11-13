@@ -1,39 +1,61 @@
-
-name: Publiceer mijn fitness-app
+name: Controleer en publiceer Ritme
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: github-pages
-  cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: ritme-build-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: fitnessapp
+    steps:
+      - name: Haal broncode van deze commit op
+        uses: actions/checkout@v4
+      - name: Installeer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      # De app gebruikt uitsluitend ingebouwde Node-modules, geen npm-install nodig.
+      - name: Test programma, gegevensbehoud en publicatie
+        run: npm test
+      - name: Bouw Pages-artifact met unieke PWA-cacheversie
+        run: npm run build:pages
+      - name: Upload geteste website
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: fitnessapp/.pages-dist
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    # Onderbreek een lopende Pages-publicatie niet halverwege.
+    concurrency:
+      group: ritme-pages-deploy
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-      - name: Haal websitebestanden op
-        uses: actions/checkout@v4
-
-      - name: Configureer GitHub Pages
+      - name: Controleer GitHub Pages-configuratie
         uses: actions/configure-pages@v5
-
-      - name: Upload mijn fitness-app
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: ./fitnessapp/dist
-
-      - name: Publiceer mijn fitness-app
+      - name: Publiceer op het bestaande Pages-adres
         id: deployment
         uses: actions/deploy-pages@v4
