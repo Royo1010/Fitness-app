@@ -10,7 +10,7 @@ export async function buildPages(source, output, revision = null) {
   if (source === output || source.startsWith(output + path.sep) || output.startsWith(source + path.sep)) {
     throw new Error('Bron en uitvoermap moeten gescheiden zijn');
   }
-  const files = (await readdir(source)).sort();
+  const files = (await readdir(source, { recursive: true, withFileTypes: true })).filter(entry => entry.isFile()).map(entry => path.relative(source, path.join(entry.parentPath, entry.name))).sort();
   const hash = createHash('sha256');
   for (const file of files) {
     hash.update(file + '\0');
@@ -25,7 +25,7 @@ export async function buildPages(source, output, revision = null) {
   await cp(source, output, { recursive: true });
   await writeFile(path.join(output, 'sw.js'), worker.replace(cacheLine, `const CACHE = PREFIX + 'build-${contentHash}';`));
   await writeFile(path.join(output, '.nojekyll'), '');
-  await writeFile(path.join(output, 'release.json'), JSON.stringify({ version: '2.0.0', commit: revision, contentHash }, null, 2) + '\n');
+  await writeFile(path.join(output, 'release.json'), JSON.stringify({ version: JSON.parse(await readFile(new URL('../package.json', import.meta.url))).version, commit: revision, contentHash }, null, 2) + '\n');
   return contentHash;
 }
 

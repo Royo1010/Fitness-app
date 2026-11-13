@@ -1,4 +1,4 @@
-import { ZONE, DAYS, localDate, mondayOf, addDays, weekFor, parseNumber, measurement, reserveText, emptyState, newSet, createSession, exerciseEntry, validSet, setError, metricFor, exerciseStats, weekProgress, weeklyCounts, makeBackup, readBackup, mergeBackup, PROGRAM_START, trainingWeek, trainingTitle, trainingSelection, canRegister, suggestedSet, adjustNumber, recordedBefore } from './core.mjs';
+import { ZONE, DAYS, localDate, mondayOf, addDays, weekFor, parseNumber, measurement, reserveText, emptyState, newSet, createBestSession as createSession, exerciseEntry, validSet, setError, metricFor, exerciseStats, weekProgress, weeklyCounts, makeBackup, readBackup, mergeBackup, PROGRAM_START, trainingWeek, trainingTitle, trainingSelection, canRegister, suggestedSet, adjustNumber, recordedBefore, bestSetIndex, exerciseDone, orderedExercises, nextExerciseIndex, recordBest } from './core.mjs';
 import { LocalStore } from './storage.mjs';
 
 const icons = {
@@ -46,6 +46,7 @@ let initialMonday = mondayOf();
 let installPrompt = null, timer = null, timerTick = null;
 let toastTimeout, modalReturnFocus, afterModal = null;
 let updateReady = false;
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 const hadController = Boolean(navigator.serviceWorker?.controller);
 const entryKey = (ei, si) => `data-ei="${ei}" data-si="${si}"`;
 
@@ -97,7 +98,7 @@ function render() {
   const nav = navButton('home', 'Training', 'dumbbell') + navButton('schema', 'Schema', 'calendar') + navButton('stats', 'Statistieken', 'chart') + navButton('library', 'Oefeningen', 'book') + navButton('more', 'Meer', 'more');
   const pageLabel = { home: 'Training', workout: 'Training bekijken', schema: 'Schema', stats: 'Statistieken', history: 'Geschiedenis', library: 'Oefeningen', settings: 'Instellingen', more: 'Meer' }[view.page];
   const body = ({ home: homePage, workout: workoutPage, schema: schemaPage, stats: statsPage, history: historyPage, settings: settingsPage, library: libraryPage, more: morePage }[view.page] || homePage)();
-  app.innerHTML = `<div class="shell v2"><aside class="sidebar"><a class="brand" href="#home" data-action="nav" data-page="home" aria-label="Ritme, naar Training"><span class="brand-mark">r.</span>ritme<span style="color:#839a69">.</span></a><nav class="nav" aria-label="Hoofdnavigatie">${nav}</nav><div class="sidebar-bottom"><span class="small muted">Ritme 2.0 · Alleen op dit apparaat</span></div></aside><div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="#home" data-action="nav" data-page="home" aria-label="Ritme, naar Training"><span class="brand-mark">r.</span>ritme.</a><span class="topbar-title">${pageLabel}</span><div class="topbar-right"><span class="connection ${navigator.onLine ? '' : 'offline'}">${navigator.onLine ? 'Lokaal bewaard' : 'Offline beschikbaar'}</span><button class="icon-btn" data-action="nav" data-page="more" aria-label="Meer opties">${icon('more')}</button></div></header><main class="content ${['home', 'workout'].includes(view.page) ? 'training-content' : ''}" id="main"><div id="storage-error"></div>${body}</main></div><nav class="mobile-nav" aria-label="Hoofdnavigatie">${nav}</nav></div><div id="timer-slot"></div>`;
+  app.innerHTML = `<div class="shell v2 ${view.page === 'home' ? 'training-home' : ''}"><aside class="sidebar"><a class="brand" href="#home" data-action="nav" data-page="home" aria-label="Ritme, naar Training"><span class="brand-mark">r.</span>ritme<span style="color:#839a69">.</span></a><nav class="nav" aria-label="Hoofdnavigatie">${nav}</nav><div class="sidebar-bottom"><span class="small muted">Ritme 2.1 · Alleen op dit apparaat</span></div></aside><div class="workspace">${view.page === 'home' ? '' : `<header class="topbar"><a class="brand mobile-brand" href="#home" data-action="nav" data-page="home" aria-label="Ritme, naar Training"><span class="brand-mark">r.</span>ritme.</a><span class="topbar-title">${pageLabel}</span><div class="topbar-right"><span class="connection ${navigator.onLine ? '' : 'offline'}">${navigator.onLine ? 'Lokaal bewaard' : 'Offline beschikbaar'}</span><button class="icon-btn" data-action="nav" data-page="more" aria-label="Meer opties">${icon('more')}</button></div></header>`}<main class="content ${['home', 'workout'].includes(view.page) ? 'training-content' : ''}" id="main"><div id="storage-error"></div>${body}</main></div><nav class="mobile-nav" aria-label="Hoofdnavigatie">${nav}</nav></div><div id="timer-slot"></div>`;
   applyTheme(); renderError(); updateSaveStatus(); renderTimer();
 }
 function renderError() {
@@ -125,7 +126,9 @@ function workoutContext() {
   const home = view.page === 'home';
   const week = home ? currentWeek() : trainingWeek(view.date || localDate());
   const selection = trainingSelection(state.sessions, week);
-  const day = home ? (view.manualWeek === week.monday ? view.manualDay : null) || selection.next || DAYS[0] : view.day || DAYS[0];
+  const focus = state.settings.trainingFocus;
+  const remembered = focus?.weekMonday === week.monday && !selection.rows.find(r => r.day === focus.day)?.completed ? focus.day : null;
+  const day = home ? (view.manualWeek === week.monday ? view.manualDay : null) || remembered || selection.next || DAYS[0] : view.day || DAYS[0];
   const existing = state.sessions.find(s => s.id === view.sessionId) || (home ? selection.rows.find(r => r.day === day)?.session : null);
   const variant = existing?.variant || (home ? week.variant : Number(view.variant) || week.variant);
   const date = existing?.date || (home ? localDate() : view.date || localDate());
@@ -138,6 +141,7 @@ function workoutContext() {
 function ensureSession() {
   const ctx = workoutContext();
   if (!ctx.editable) { toast(ctx.week.official ? 'Kies deze training om hem uit te voeren.' : 'Dit is een voorbeeld. Er wordt nog geen voortgang aangemaakt.'); return null; }
+  state.settings.trainingFocus = { day: ctx.day, weekMonday: ctx.week.monday };
   if (ctx.s) return ctx.s;
   state.sessions.push(ctx.draft); view.sessionId = ctx.draft.id;
   navigator.storage?.persist?.().catch(() => {});
@@ -146,29 +150,24 @@ function ensureSession() {
 function workoutPage() {
   const ctx = workoutContext(), { s, day, variant, title, entries, week, editable } = ctx;
   const completed = s?.status === 'completed';
-  const valid = entries.reduce((n, e) => n + e.sets.filter(st => validSet(st, e.measurement)).length, 0);
-  const total = entries.reduce((n, e) => n + e.sets.filter(st => st.kind === 'work' && !e.optional).length, 0);
+  const valid = entries.filter(exerciseDone).length;
+  const total = entries.length;
   const selection = trainingSelection(state.sessions, week);
   const current = week.monday === currentWeek().monday;
   return `${view.page === 'workout' ? `<button class="back" data-action="nav" data-page="${view.fromHistory ? 'history' : 'schema'}">${icon('back')}${view.fromHistory ? 'Geschiedenis' : 'Schema'}</button>` : ''}<div class="training-weekline">${weekLabel(week)}<span class="tag ${completed ? 'lime' : !week.official || !current ? 'soft' : 'soft'}">${completed ? 'Voltooid' : !week.official || ctx.date > localDate() ? 'Voorbeeld' : s?.status === 'paused' ? 'Gepauzeerd' : s ? 'Bezig' : 'Staat klaar'}</span></div><div class="training-title-row"><div><h1>${esc(title)}</h1><p>${focusFor(day)}</p></div>${view.page === 'home' ? `<label class="training-switch"><span class="sr-only">Andere training kiezen</span><select id="active-training" aria-label="Andere training kiezen">${selection.rows.map(r => `<option value="${r.day}" ${day === r.day ? 'selected' : ''}>${r.title}${r.completed ? ' ✓' : ''}</option>`).join('')}</select></label>` : ''}</div>
-    <div class="training-progress-row"><span data-training-progress>${valid} / ${total} werksets</span><div class="linear-progress"><span data-training-bar style="width:${total ? Math.min(100, valid / total * 100) : 0}%"></span></div><span class="muted">${entries.filter(e => !e.optional).length} oefeningen</span></div>
+    <div class="training-progress-row"><span data-training-progress>${valid} / ${total} oefeningen</span><div class="linear-progress"><span data-training-bar style="width:${total ? Math.min(100, valid / total * 100) : 0}%"></span></div></div>
     ${view.page === 'workout' && current && week.official && !completed && !view.fromHistory ? `<button class="btn primary wide choose-training" data-action="choose-workout">${icon('play')}Deze training kiezen</button>` : ''}
     ${completed ? `<button class="btn outline wide choose-training" data-action="reopen">${icon('reset')}Voltooiing herstellen / registratie aanpassen</button>` : ''}
-    <details class="warmup warmup-compact"><summary>${icon('spark')}Warming-up <span>${day.startsWith('upper') ? 'Upper' : 'Lower'}</span>${icon('down')}</summary><p>${esc(s?.warmup || program.warmup[day.startsWith('upper') ? 'upper' : 'lower'])}</p>${day.startsWith('upper') ? `<div class="row wrap"><button class="btn quiet" data-action="exercise-info" data-exercise="scapular_pushup">Scapular push-up ${icon('info')}</button><button class="btn quiet" data-action="exercise-info" data-exercise="assisted_hang">Ondersteunde hang · optioneel ${icon('info')}</button></div>` : ''}</details>
     ${!week.official && !s ? `<p class="preview-note">Voorbeeld · je kunt je programma bekijken; registraties zijn nog niet actief.</p>` : ''}
-    <div class="exercise-list">${entries.map((e, ei) => exerciseCard(e, ei, ctx)).join('')}</div>
+    <div class="exercise-list">${orderedExercises(entries).map(({ entry, index }) => exerciseCard(entry, index, ctx)).join('')}</div>
     ${day === 'upper_b' && !entries.some(e => e.exerciseId === 'dead_hang') ? `<div class="optional-finisher"><div><strong>Dead hang · optioneel</strong><p>${esc(program.finisher.upper_b)}</p></div><button class="icon-btn" data-action="exercise-info" data-exercise="dead_hang" aria-label="Uitleg optionele dead hang">${icon('info')}</button>${editable ? '<button class="btn outline" data-action="add-finisher">Toevoegen</button>' : ''}</div>` : ''}
-    <details class="training-notes"><summary>Notities & trainingsafspraken ${icon('down')}</summary><div class="field"><label for="session-note">Trainingsnotitie · klachten tijdens, later of de volgende ochtend</label><textarea id="session-note" data-session-note ${!editable ? 'readonly' : ''} placeholder="Hoe voelde je training?">${esc(s?.note || '')}</textarea></div><p>${esc(s?.safety || program.metadata.safety)}</p><button class="link-btn" data-action="safety">Alle trainingsafspraken ${icon('arrow')}</button></details>
-    ${editable ? `<div class="finish-bar"><div><strong data-training-progress>${valid} / ${total} werksets</strong><span class="save-state" data-save-status></span></div><div class="row"><button class="icon-btn" data-action="pause" aria-label="Training pauzeren en bewaren">${icon('pause')}</button><button class="btn primary" data-action="finish">${icon('check')}Training afronden</button></div></div>` : ''}
-    ${s ? `<div class="session-bottom-actions"><span class="save-state" data-save-status></span><button class="btn quiet" data-action="session-options">${icon('more')}Registratie beheren</button></div>` : ''}`;
+    ${valid === total ? '<p class="checklist-complete" role="status">Alle oefeningen afgerond. Klaar om je training af te sluiten.</p>' : ''}
+    ${editable ? `<div class="finish-bar"><div><strong data-training-progress>${valid} / ${total} oefeningen</strong></div><div class="row"><button class="icon-btn" data-action="pause" aria-label="Training pauzeren en bewaren">${icon('pause')}</button><button class="btn primary" data-action="finish">${icon('check')}Training afronden</button></div></div>` : ''}
+    ${s ? `<div class="session-bottom-actions"><button class="btn quiet" data-action="session-options">${icon('more')}Registratie beheren</button></div>` : ''}`;
 }
 function exerciseCard(e, ei, ctx) {
-  const m = e.measurement, p = e.prescription;
-  const prior = exerciseStats(recordedSessions(), e.exerciseId, { excludeSession: ctx.s?.id, before: ctx.date, basis: m.basis }).latest;
-  const done = e.sets.filter(st => validSet(st, m)).length;
-  const all = e.sets.filter(st => st.kind === 'work').length;
-  return `<section class="exercise-card exercise-compact" data-exercise-card="${ei}" aria-labelledby="exercise-title-${ei}"><header class="exercise-top"><span class="exercise-number ${done === all && all ? 'done' : ''}">${done === all && all ? icon('check') : String(ei + 1).padStart(2, '0')}</span><button class="exercise-name" id="exercise-title-${ei}" data-action="exercise-info" data-exercise="${e.exerciseId}" data-ei="${ei}">${esc(e.instruction.name)}</button><button class="icon-btn exercise-info" data-action="exercise-info" data-exercise="${e.exerciseId}" data-ei="${ei}" aria-label="Uitleg en prestaties: ${esc(e.instruction.name)}">${icon('info')}</button></header><div class="exercise-prescription">${p.sets} × ${esc(p.reps)} <span>·</span> ${esc(p.rest)} rust${p.is_variation ? '<span>·</span> variant' : ''}<span class="exercise-count" data-entry-progress="${ei}">${done}/${all}</span></div><p class="last-inline">${prior ? `Vorige: <strong>${prior.sets.map(st => esc(performanceText(st, m))).join(' / ')}</strong>` : 'Nog geen vorige uitvoering'}</p><div class="exercise-body"><div class="set-head compact-set-head"><span>SET</span><span>${m.kind === 'duration' ? 'SECONDEN' : m.kind === 'reps' && !m.optionalWeight ? 'HERHALINGEN' : m.kind === 'distance' ? 'KG PER HAND' : m.basis === 'per_dumbbell' ? 'KG / DUMBBELL' : m.optionalWeight ? 'EXTRA KG · OPT.' : 'KILOGRAM'}</span><span>${m.kind === 'duration' || m.kind === 'reps' && !m.optionalWeight ? '' : m.kind === 'distance' ? 'METERS' : 'HERHALINGEN'}</span><span></span></div>${e.sets.map((st, si) => setRow(st, si, ei, e, !ctx.editable, ctx)).join('')}
-    ${ctx.editable ? `<div class="exercise-actions"><button class="mini-action" data-action="add-set" data-ei="${ei}">${icon('plus')}Set</button><button class="mini-action" data-action="rest" data-ei="${ei}">${icon('clock')}Rust</button>${m.kind !== 'duration' && (m.kind !== 'reps' || m.optionalWeight) ? `<label class="step-size">Stap <select data-weight-step="${ei}" aria-label="Gewichtsstap ${esc(e.instruction.name)}">${[.5, 1, 2.5, 5].map(n => `<option value="${n}" ${weightStep(e.exerciseId) === n ? 'selected' : ''}>${num(n)} kg</option>`).join('')}</select></label>` : ''}<button class="mini-action" data-action="exercise-options" data-ei="${ei}" aria-label="Sets en opties ${esc(e.instruction.name)}">${icon('more')}</button></div>${['weight', 'distance'].includes(m.kind) && !prior && e.sets.every(st => st.kg === null) ? `<div class="quick-weights"><span>Snelle invoer</span>${quickWeights(e.exerciseId).map(n => `<button data-action="quick-weight" data-ei="${ei}" data-value="${n}">${num(n)}<span class="sr-only"> kg als startwaarde</span></button>`).join('')}</div>` : ''}` : ''}${e.skippedReason ? `<p class="skip-text">${esc(e.skippedReason)}</p>` : ''}<span class="weight-convention">${esc(m.label)}</span></div></section>`;
+  const m = e.measurement, p = e.prescription, done = exerciseDone(e), si = view.bestIndices?.[ctx.draft.id + ':' + ei] ?? bestSetIndex(e);
+  return `<section class="exercise-card exercise-compact ${done ? 'exercise-done' : ''}" data-exercise-card="${ei}" aria-labelledby="exercise-title-${ei}"><header class="exercise-top"><span class="exercise-number ${done ? 'done' : ''}">${done ? icon('check') : String(ei + 1).padStart(2, '0')}</span><button class="exercise-name" id="exercise-title-${ei}" data-action="exercise-info" data-exercise="${e.exerciseId}" data-ei="${ei}">${esc(e.instruction.name)}</button><button class="icon-btn exercise-info" data-action="exercise-info" data-exercise="${e.exerciseId}" data-ei="${ei}" aria-label="Uitleg en prestaties: ${esc(e.instruction.name)}">${icon('info')}</button></header><div class="exercise-prescription">${p.sets} × ${esc(p.reps)} <span>·</span> ${esc(p.rest)} rust</div><div class="exercise-body"><div class="best-label">Beste set <span>${esc(m.label)}</span></div><div class="set-head compact-set-head"><span>${m.kind === 'duration' ? 'SECONDEN' : m.kind === 'reps' && !m.optionalWeight ? 'HERHALINGEN' : m.kind === 'distance' ? 'KG PER HAND' : m.basis === 'per_dumbbell' ? 'KG / DUMBBELL' : m.optionalWeight ? 'EXTRA KG · OPT.' : 'KILOGRAM'}</span><span>${m.kind === 'duration' || m.kind === 'reps' && !m.optionalWeight ? '' : m.kind === 'distance' ? 'METERS' : 'HERHALINGEN'}</span><span class="sr-only">Oefening afvinken</span></div>${setRow(e.sets[si], si, ei, e, !ctx.editable, ctx)}</div></section>`;
 }
 function quickWeights(id) {
   if (['ext_rotation_cable', 'side_lying_ext_rotation', 'wrist_curl', 'reverse_wrist_curl'].includes(id)) return [.5, 1, 2.5, 5];
@@ -177,22 +176,22 @@ function quickWeights(id) {
   return measurement(id).basis === 'per_dumbbell' ? [5, 10, 20, 30] : [40, 60, 80, 100];
 }
 function weightStep(id) { return state.settings.weightSteps?.[id] || (['ext_rotation_cable', 'side_lying_ext_rotation', 'wrist_curl', 'reverse_wrist_curl', 'lateral_raise', 'db_curl', 'hammer_curl'].includes(id) ? .5 : 2.5); }
-function setRow(st, si, ei, entry, readonly, ctx) {
+function setRow(st = newSet(), si, ei, entry, readonly, ctx) {
   const m = entry.measurement, key = entryKey(ei, si);
   const proposal = suggestedSet(entry, si, recordedSessions(), ctx.s || ctx.draft);
   const field = (name, label) => {
     const value = st[name] ?? proposal[name];
     const suggested = st[name] === null && value !== null;
-    return `<div class="number-stepper ${suggested ? 'suggested' : ''}"><button data-action="step" data-field="${name}" data-direction="-1" ${key} aria-label="Set ${si + 1}: ${label} verlagen" ${readonly || st.skipped ? 'disabled' : ''}>−</button><input type="text" inputmode="${name === 'reps' ? 'numeric' : 'decimal'}" autocomplete="off" maxlength="12" data-set-field="${name}" ${key} data-proposed="${suggested}" value="${esc(inputNum(value))}" aria-label="Set ${si + 1}: ${label}" placeholder="—" ${readonly || st.skipped ? 'readonly' : ''}><button data-action="step" data-field="${name}" data-direction="1" ${key} aria-label="Set ${si + 1}: ${label} verhogen" ${readonly || st.skipped ? 'disabled' : ''}>+</button></div>`;
+    return `<div class="number-stepper ${suggested ? 'suggested' : ''}"><button data-action="step" data-field="${name}" data-direction="-1" ${key} aria-label="Beste set: ${label} verlagen" ${readonly ? 'disabled' : ''}>−</button><input type="text" inputmode="${name === 'reps' ? 'numeric' : 'decimal'}" autocomplete="off" maxlength="12" data-set-field="${name}" ${key} data-proposed="${suggested}" value="${esc(inputNum(value))}" aria-label="Beste set: ${label}" placeholder="—" ${readonly ? 'readonly' : ''}><button data-action="step" data-field="${name}" data-direction="1" ${key} aria-label="Beste set: ${label} verhogen" ${readonly ? 'disabled' : ''}>+</button></div>`;
   };
-  return `<div class="set-row ${st.completed ? 'completed' : ''} ${st.skipped ? 'skipped' : ''}"><span class="set-index">${si + 1}${st.kind === 'warmup' ? 'w' : ''}</span>${m.kind === 'duration' ? field('seconds', 'seconden') + '<span></span>' : m.kind === 'reps' && !m.optionalWeight ? field('reps', 'herhalingen') + '<span></span>' : field('kg', m.label) + field(m.kind === 'distance' ? 'meters' : 'reps', m.kind === 'distance' ? 'meters' : 'herhalingen')}<button class="set-check ${st.completed ? 'checked' : st.skipped ? 'skip' : ''}" data-action="complete-set" ${key} aria-label="Set ${si + 1} ${st.completed ? 'ongedaan maken' : st.skipped ? 'overgeslagen' : 'afronden'}" aria-pressed="${st.completed}" ${readonly ? 'disabled' : ''}>${icon(st.skipped ? 'skip' : 'check')}</button></div>`;
+  return `<div class="set-row ${exerciseDone(entry) ? 'completed' : ''}">${m.kind === 'duration' ? field('seconds', 'seconden') + '<span></span>' : m.kind === 'reps' && !m.optionalWeight ? field('reps', 'herhalingen') + '<span></span>' : field('kg', m.label) + field(m.kind === 'distance' ? 'meters' : 'reps', m.kind === 'distance' ? 'meters' : 'herhalingen')}<button class="set-check ${exerciseDone(entry) ? 'checked' : ''}" data-action="complete-exercise" ${key} aria-label="${esc(entry.instruction.name)} ${exerciseDone(entry) ? 'opnieuw activeren' : 'afvinken'}" aria-pressed="${exerciseDone(entry)}" ${readonly ? 'disabled' : ''}>${icon('check')}</button></div>`;
 }
 function exerciseOptions(ei) {
   const ctx = workoutContext(), e = ctx.entries[ei];
   showModal(dialogContent(esc(e.instruction.name), `<p class="lead" style="font-size:12px">${esc(reserveText(e.exerciseId))}</p><p class="lead" style="font-size:12px">Links + rechts vormen bij eenzijdige oefeningen samen één set. Noteer verschillen in de setnotitie.</p>${e.sets.map((st, si) => `<details class="set-option"><summary>Set ${si + 1} · ${st.completed ? 'afgerond' : st.skipped ? 'overgeslagen' : 'open'}</summary><div class="form-grid"><div class="field"><label for="reserve-${ei}-${si}">Herhalingen over</label><input id="reserve-${ei}-${si}" type="text" inputmode="numeric" data-set-field="reserve" ${entryKey(ei, si)} value="${esc(inputNum(st.reserve))}"></div><div class="field"><label for="kind-${ei}-${si}">Type set</label><select id="kind-${ei}-${si}" data-set-field="kind" ${entryKey(ei, si)}><option value="work" ${st.kind === 'work' ? 'selected' : ''}>Werkset</option><option value="warmup" ${st.kind === 'warmup' ? 'selected' : ''}>Opwarmset</option></select></div></div><div class="field"><label for="note-${ei}-${si}">Setnotitie</label><input type="text" id="note-${ei}-${si}" data-set-field="note" ${entryKey(ei, si)} value="${esc(st.note)}"></div><div class="row wrap"><button class="btn outline" data-action="skip-set" ${entryKey(ei, si)}>${st.skipped ? 'Toch uitvoeren' : 'Set overslaan'}</button><button class="btn danger" data-action="remove-set" ${entryKey(ei, si)}>Set verwijderen</button></div></details>`).join('')}<div class="field space-top"><label for="option-exercise-note">Oefeningnotitie</label><textarea id="option-exercise-note" data-exercise-note data-ei="${ei}">${esc(e.note)}</textarea></div><button class="btn outline space-top" data-action="skip-exercise" data-ei="${ei}">${e.skippedReason ? 'Overslaan opheffen' : 'Oefening overslaan'}</button>`));
 }
 function morePage() {
-  return `<div class="page-intro compact"><h1>Meer</h1><span class="tag soft">Ritme 2.0</span></div><div class="more-list"><button data-action="nav" data-page="history">${icon('history')}<span><strong>Geschiedenis</strong><small>Trainingen terugkijken en achteraf invoeren</small></span>${icon('right')}</button><button data-action="nav" data-page="settings">${icon('settings')}<span><strong>Instellingen & back-ups</strong><small>Weergave, exporteren en herstellen</small></span>${icon('right')}</button><button data-action="export">${icon('download')}<span><strong>Back-up downloaden</strong><small>Je volledige logboek als JSON</small></span>${icon('right')}</button><button data-action="install">${icon('plus')}<span><strong>Op je beginscherm</strong><small>Ritme installeren en offline gebruiken</small></span>${icon('right')}</button></div><p class="local-data-note">${icon('shield')}Je gegevens blijven op dit apparaat. Er is geen automatische synchronisatie. Bewaar regelmatig een back-up.</p>`;
+  return `<div class="page-intro compact"><h1>Meer</h1><span class="tag soft">Ritme 2.1</span></div><div class="more-list"><button data-action="nav" data-page="history">${icon('history')}<span><strong>Geschiedenis</strong><small>Trainingen terugkijken en achteraf invoeren</small></span>${icon('right')}</button><button data-action="nav" data-page="settings">${icon('settings')}<span><strong>Instellingen & back-ups</strong><small>Weergave, exporteren en herstellen</small></span>${icon('right')}</button><button data-action="export">${icon('download')}<span><strong>Back-up downloaden</strong><small>Je volledige logboek als JSON</small></span>${icon('right')}</button><button data-action="install">${icon('plus')}<span><strong>Op je beginscherm</strong><small>Ritme installeren en offline gebruiken</small></span>${icon('right')}</button></div><p class="local-data-note">${icon('shield')}Je gegevens blijven op dit apparaat. Er is geen automatische synchronisatie. Bewaar regelmatig een back-up.</p>`;
 }
 function libraryPage() {
   const category = view.libraryFilter || 'all', search = view.librarySearch || '';
@@ -214,8 +213,8 @@ function performanceText(set, m) {
 }
 function statsStrip(stats, m) {
   const key = metricFor(m), unit = m.unit;
-  const load = m.kind === 'distance' && stats.load ? `<p class="small muted" style="font-size:10px;margin-bottom:12px">Gewichtsrecord: <strong>${num(stats.load.pr.kg)} kg per hand</strong> · ${num(stats.load.pr.meters)} m · ${dateFmt(stats.load.pr.date, { year: 'numeric' })}<br>Gemiddeld gewicht alle werksets: ${num(stats.load.average)} kg per hand · laatste 5 uitvoeringen: ${num(stats.load.recentAverage)} kg per hand</p>` : '';
-  return `<div class="exercise-meta"><div><small>${m.kind === 'weight' ? 'GEWICHTSRECORD' : 'PERSOONLIJK RECORD'}</small><strong>${stats.pr ? `${num(stats.pr[key])} ${unit}` : 'Nog geen data'}</strong>${stats.pr ? `<small>${dateFmt(stats.pr.date)}${stats.pr.reps !== null ? ' · ' + stats.pr.reps + ' herh.' : ''}</small>` : ''}</div><div><small>GEM. ALLE WERKSETS</small><strong>${stats.average !== null ? num(stats.average) + ' ' + unit : '—'}</strong></div><div><small>GEM. LAATSTE 5 UITVOERINGEN</small><strong>${stats.recentAverage !== null ? num(stats.recentAverage) + ' ' + unit : '—'}</strong></div></div>${load}`;
+  const load = m.kind === 'distance' && stats.load ? `<p class="small muted" style="font-size:10px;margin-bottom:12px">Gewichtsrecord: <strong>${num(stats.load.pr.kg)} kg per hand</strong> · ${num(stats.load.pr.meters)} m · ${dateFmt(stats.load.pr.date, { year: 'numeric' })}<br>Gemiddeld geregistreerd gewicht: ${num(stats.load.average)} kg per hand · laatste 5 uitvoeringen: ${num(stats.load.recentAverage)} kg per hand</p>` : '';
+  return `<div class="exercise-meta"><div><small>${m.kind === 'weight' ? 'GEWICHTSRECORD' : 'PERSOONLIJK RECORD'}</small><strong>${stats.pr ? `${num(stats.pr[key])} ${unit}` : 'Nog geen data'}</strong>${stats.pr ? `<small>${dateFmt(stats.pr.date)}${stats.pr.reps !== null ? ' · ' + stats.pr.reps + ' herh.' : ''}</small>` : ''}</div><div><small>GEM. GEREGISTREERDE SETS</small><strong>${stats.average !== null ? num(stats.average) + ' ' + unit : '—'}</strong></div><div><small>GEM. LAATSTE 5 UITVOERINGEN</small><strong>${stats.recentAverage !== null ? num(stats.recentAverage) + ' ' + unit : '—'}</strong></div></div>${load}`;
 }
 function statsPage() {
   const id = view.statsExercise, m = measurement(id);
@@ -225,16 +224,16 @@ function statsPage() {
   const key = metricFor(m), unit = m.unit;
   const completed = recordedSessions().filter(s => s.status === 'completed').length;
   const weeks = weeklyCounts(recordedSessions(), addDays(mondayOf(), -49), localDate());
-  const metricName = { average: m.kind === 'weight' ? 'Gemiddeld werksetgewicht' : m.kind === 'duration' ? 'Gemiddelde tijdsduur' : m.kind === 'distance' ? 'Gemiddelde afstand' : 'Gemiddeld aantal herhalingen', max: 'Hoogste waarde per uitvoering', reps: 'Herhalingen per uitvoering', volume: 'Volume per uitvoering', load: 'Gemiddeld gewicht per hand' }[view.chartMetric];
-  return `<div class="page-intro"><div><div class="eyebrow">ELKE SET VERTELT EEN VERHAAL</div><h1>Jouw vooruitgang.</h1><p class="lead">Een helder beeld van wat je daadwerkelijk hebt gedaan.</p></div><span class="tag">${icon('check')}${completed} ${completed === 1 ? 'training' : 'trainingen'} voltooid</span></div>
+  const metricName = { average: m.kind === 'weight' ? 'Gemiddeld geregistreerd gewicht' : m.kind === 'duration' ? 'Gemiddelde tijdsduur' : m.kind === 'distance' ? 'Gemiddelde afstand' : 'Gemiddeld aantal herhalingen', max: 'Hoogste waarde per uitvoering', reps: 'Herhalingen per uitvoering', volume: 'Volume geregistreerde sets', load: 'Gemiddeld gewicht per hand' }[view.chartMetric];
+  return `<div class="page-intro"><div><div class="eyebrow">JE BESTE GEREGISTREERDE SET</div><h1>Jouw vooruitgang.</h1><p class="lead">Je beste sets vanaf Ritme 2.1, met behoud van alle eerdere registraties.</p></div><span class="tag">${icon('check')}${completed} ${completed === 1 ? 'training' : 'trainingen'} voltooid</span></div>
     <div class="filter-bar"><div class="field"><label for="stats-exercise">Oefening</label><select id="stats-exercise" data-filter="statsExercise">${Object.entries(program.exercises).map(([k, e]) => `<option value="${k}" ${id === k ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div><div class="field"><label for="stats-period">Periode grafiek</label><select id="stats-period" data-filter="period"><option value="30" ${view.period === '30' ? 'selected' : ''}>30 dagen</option><option value="90" ${view.period === '90' ? 'selected' : ''}>90 dagen</option><option value="365" ${view.period === '365' ? 'selected' : ''}>1 jaar</option><option value="all" ${view.period === 'all' ? 'selected' : ''}>Alles</option></select></div></div>
     <p class="small muted">${esc(m.label)} · Resultaten blijven gescheiden per oefening en gewichtsdefinitie.</p>
-    <div class="stat-grid"><div class="stat-tile"><div class="eyebrow">${m.kind === 'weight' ? 'Gewichtsrecord' : 'Persoonlijk record'}</div><div class="stat-value">${all.pr ? num(all.pr[key]) : '—'} <span>${all.pr ? unit : ''}</span></div><small>${all.pr ? dateFmt(all.pr.date, { year: 'numeric' }) + (all.pr.reps !== null ? ' · ' + num(all.pr.reps) + ' herh.' : m.kind === 'distance' ? ' · ' + num(all.pr.kg) + ' kg per hand' : '') : 'Je eerste record komt vanzelf.'}</small></div><div class="stat-tile"><div class="eyebrow">Gemiddeld gebruikt</div><div class="stat-value">${num(all.average)} <span>${all.average !== null ? unit : ''}</span></div><small>Alle geldige geregistreerde werksets · ${all.sets} ${all.sets === 1 ? 'set' : 'sets'}</small></div><div class="stat-tile"><div class="eyebrow">Laatste 5 uitvoeringen</div><div class="stat-value">${num(all.recentAverage)} <span>${all.recentAverage !== null ? unit : ''}</span></div><small>Gemiddelde van werksets in de laatste ${Math.min(5, all.runs.length)} ${all.runs.length === 1 ? 'uitvoering' : 'uitvoeringen'}</small></div></div>
+    <div class="stat-grid"><div class="stat-tile"><div class="eyebrow">${m.kind === 'weight' ? 'Gewichtsrecord' : 'Persoonlijk record'}</div><div class="stat-value">${all.pr ? num(all.pr[key]) : '—'} <span>${all.pr ? unit : ''}</span></div><small>${all.pr ? dateFmt(all.pr.date, { year: 'numeric' }) + (all.pr.reps !== null ? ' · ' + num(all.pr.reps) + ' herh.' : m.kind === 'distance' ? ' · ' + num(all.pr.kg) + ' kg per hand' : '') : 'Je eerste record komt vanzelf.'}</small></div><div class="stat-tile"><div class="eyebrow">Gemiddeld gebruikt</div><div class="stat-value">${num(all.average)} <span>${all.average !== null ? unit : ''}</span></div><small>Alle geldige geregistreerde werksets · ${all.sets} ${all.sets === 1 ? 'set' : 'sets'}</small></div><div class="stat-tile"><div class="eyebrow">Laatste 5 uitvoeringen</div><div class="stat-value">${num(all.recentAverage)} <span>${all.recentAverage !== null ? unit : ''}</span></div><small>Gemiddelde van geregistreerde sets in de laatste ${Math.min(5, all.runs.length)} ${all.runs.length === 1 ? 'uitvoering' : 'uitvoeringen'}</small></div></div>
     ${m.kind === 'distance' && all.load ? `<div class="notice" style="margin-bottom:20px">${icon('trophy')}<p><strong>Gewichtsrecord: ${num(all.load.pr.kg)} kg per hand</strong> · ${num(all.load.pr.meters)} m · ${dateFmt(all.load.pr.date, { year: 'numeric' })}<br>Gemiddelde alle werksets: ${num(all.load.average)} kg per hand · laatste 5 uitvoeringen: ${num(all.load.recentAverage)} kg per hand.</p></div>` : ''}
-    <section class="panel"><div class="chart-head"><div><h2>${metricName}</h2><p>Per trainingssessie · ${esc(m.label)}</p></div><div class="metric-tabs" role="group" aria-label="Grafiekmeting">${[['average', 'Gemiddelde'], ['max', 'Record'], ...(m.kind === 'distance' ? [['load', 'Gewicht']] : []), ...(m.kind === 'weight' || m.kind === 'reps' ? [['reps', 'Herhalingen']] : []), ...(m.kind === 'weight' ? [['volume', 'Volume']] : [])].map(([v, l]) => `<button class="${view.chartMetric === v ? 'active' : ''}" data-action="chart-metric" data-metric="${v}" aria-pressed="${view.chartMetric === v}">${l}</button>`).join('')}</div></div>${stats.runs.length ? chartMarkup(stats.runs, m) : `<div class="empty"><div class="empty-icon">${icon('chart')}</div><h3>${all.runs.length ? 'Nog geen sets in deze periode' : 'Hier groeit je vooruitgang.'}</h3><p>${all.runs.length ? 'Kies een langere periode om je eerdere uitvoeringen te bekijken.' : 'Registreer je eerste werkset. Dan verschijnen hier je gewichten, herhalingen en persoonlijke records.'}</p><button class="btn outline" data-action="nav" data-page="home">Naar je trainingen ${icon('arrow')}</button></div>`}${view.chartMetric === 'volume' ? `<p class="small muted" style="font-size:10px">Volume = som van ingevoerde kg × herhalingen. Bij dumbbells per dumbbell; bij eenzijdige oefeningen per kant. Geen verdubbeling. Vergelijk alleen dezelfde oefening en gewichtsdefinitie.</p>` : ''}</section>
+    <section class="panel"><div class="chart-head"><div><h2>${metricName}</h2><p>Per trainingssessie · ${esc(m.label)}</p></div><div class="metric-tabs" role="group" aria-label="Grafiekmeting">${[['average', 'Gemiddelde'], ['max', 'Record'], ...(m.kind === 'distance' ? [['load', 'Gewicht']] : []), ...(m.kind === 'weight' || m.kind === 'reps' ? [['reps', 'Herhalingen']] : []), ...(m.kind === 'weight' ? [['volume', 'Gelogd volume']] : [])].map(([v, l]) => `<button class="${view.chartMetric === v ? 'active' : ''}" data-action="chart-metric" data-metric="${v}" aria-pressed="${view.chartMetric === v}">${l}</button>`).join('')}</div></div>${stats.runs.length ? chartMarkup(stats.runs, m) : `<div class="empty"><div class="empty-icon">${icon('chart')}</div><h3>${all.runs.length ? 'Nog geen sets in deze periode' : 'Hier groeit je vooruitgang.'}</h3><p>${all.runs.length ? 'Kies een langere periode om je eerdere uitvoeringen te bekijken.' : 'Registreer je eerste werkset. Dan verschijnen hier je gewichten, herhalingen en persoonlijke records.'}</p><button class="btn outline" data-action="nav" data-page="home">Naar je trainingen ${icon('arrow')}</button></div>`}${view.chartMetric === 'volume' ? `<p class="small muted" style="font-size:10px">Dit is uitsluitend het volume van geregistreerde sets: kg × herhalingen. Vanaf 2.1 registreer je één beste set; het werkelijke totale trainingsvolume is onbekend. Voorgeschreven sets worden nooit vermenigvuldigd. Bij dumbbells per dumbbell; bij eenzijdige oefeningen per kant. Geen verdubbeling. Vergelijk alleen dezelfde oefening en gewichtsdefinitie.</p>` : ''}</section>
     <section class="panel space-top"><div class="chart-head"><div><h2>Een ritme dat je volhoudt</h2><p>Voltooide trainingen per kalenderweek · laatste 8 weken</p></div><span class="tag soft">${completed} in totaal</span></div><div class="bar-chart" aria-label="Voltooide trainingen per week">${weeks.map(w => `<div class="bar-col"><span class="bar-count">${w.count}</span><div class="bar" style="height:${w.count ? Math.max(10, w.count / Math.max(4, ...weeks.map(x => x.count)) * 100) : 3}px" title="Week van ${dateFmt(w.monday)}: ${w.count} ${w.count === 1 ? 'training' : 'trainingen'}"></div><small>${dateFmt(w.monday)}</small></div>`).join('')}</div></section>
-    ${all.runs.length ? `<div class="section-head"><div><h2>Oefeninggeschiedenis</h2><p>Geldige afgeronde werksets voor deze oefening.</p></div><button class="link-btn" data-action="exercise-info" data-exercise="${id}">Oefenuitleg ${icon('info')}</button></div><div class="panel table-wrap"><table class="data-table"><thead><tr><th>DATUM / TRAINING</th><th>GEREGISTREERDE SETS</th><th>GEMIDDELDE</th></tr></thead><tbody>${[...stats.runs].reverse().map(r => `<tr><td><button data-action="open-session" data-id="${esc(r.sessionId)}">${dateFmt(r.date, { year: 'numeric' })}</button><br><span class="muted">${esc(r.title)}</span></td><td>${r.sets.map(st => esc(performanceText(st, r.measurement))).join('<br>')}${all.records.some(rec => rec.sessionId === r.sessionId) ? '<span class="new-record">Nieuw record</span>' : ''}</td><td>${num(r.average)} ${unit}</td></tr>`).join('')}</tbody></table></div>` : ''}
-    <div class="notice space-top">${icon('info')}<p>Je ziet trainingstrends uit afgeronde werksets, ook uit gedeeltelijk opgeslagen trainingen. Opwarmsets en overgeslagen sets tellen niet mee. Gewichtscijfers zeggen op zichzelf niets over spiergroei.</p></div>`;
+    ${all.runs.length ? `<div class="section-head"><div><h2>Oefeninggeschiedenis</h2><p>Beste geregistreerde sets vanaf 2.1; eerdere individuele sets blijven zichtbaar.</p></div><button class="link-btn" data-action="exercise-info" data-exercise="${id}">Oefenuitleg ${icon('info')}</button></div><div class="panel table-wrap"><table class="data-table"><thead><tr><th>DATUM / TRAINING</th><th>GEREGISTREERDE SETS</th><th>GEMIDDELDE</th></tr></thead><tbody>${[...stats.runs].reverse().map(r => `<tr><td><button data-action="open-session" data-id="${esc(r.sessionId)}">${dateFmt(r.date, { year: 'numeric' })}</button><br><span class="muted">${esc(r.title)}</span></td><td>${r.recordingMode === 'best' ? '<small>Beste set</small><br>' : ''}${r.sets.map(st => esc(performanceText(st, r.measurement))).join('<br>')}${all.records.some(rec => rec.sessionId === r.sessionId) ? '<span class="new-record">Nieuw record</span>' : ''}</td><td>${num(r.average)} ${unit}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    <div class="notice space-top">${icon('info')}<p>Sinds 2.1 registreer je één beste set per oefening. Oudere individuele werksets blijven meetellen. Alle cijfers gebruiken uitsluitend werkelijk geregistreerde waarden, ook uit gedeeltelijk opgeslagen trainingen. Opwarmsets en overgeslagen sets tellen niet mee. Gewichtscijfers zeggen op zichzelf niets over spiergroei.</p></div>`;
 }
 function chartMarkup(runs, m) {
   const metric = view.chartMetric, key = metricFor(m);
@@ -281,7 +280,7 @@ function showExercise(id, ei) {
   const prescribed = snapshot ? [snapshot.prescription] : (['home', 'workout'].includes(view.page) ? program.week_programs[workoutContext().variant][workoutContext().day].filter(p => p.exercise_id === id) : Object.entries(program.week_programs).flatMap(([variant, days]) => Object.entries(days).flatMap(([day, entries]) => entries.filter(p => p.exercise_id === id).map(p => ({ ...p, context: titleFor(day, Number(variant)) })))));
   const stats = exerciseStats(recordedSessions(), id, { basis: m.basis });
   const previous = exerciseStats(recordedSessions(), id, { basis: m.basis, excludeSession: s?.id }).latest;
-  showModal(dialogContent(esc(e.name), `<p class="lead">${esc(e.muscles)}</p>${prescribed.length ? `<div class="notice space-top"><div>${prescribed.map(p => `<p>${p.context ? `<strong>${esc(p.context)}:</strong> ` : ''}${p.sets} werksets × ${esc(p.reps)} · ${esc(p.rest)} rust</p>`).join('')}</div></div>` : id === 'scapular_pushup' ? '<div class="notice space-top">Warming-up Upper: 1 × 10–12 herhalingen, geen werkset.</div>' : ['dead_hang', 'assisted_hang'].includes(id) ? `<div class="notice space-top">${esc(id === 'dead_hang' ? program.finisher.upper_b : 'Optionele warming-up: 10–15 seconden ondersteund, alleen pijnvrij.')}</div>` : ''}<p class="lead" style="font-size:11px">${esc(reserveText(id))}</p>${statsStrip(stats, m)}<p class="small muted">${esc(m.label)}</p>${detailProgress(stats, m, id)}${[['setup', '01 · Startpositie & opstelling'], ['movement', '02 · De beweging'], ['cues', '03 · Houding, aanspanning & ademhaling'], ['avoid', '04 · Veelgemaakte fouten'], ['adjust', '05 · Aanpassingen bij klachten']].map(([k, label]) => `<section class="instruction"><h3>${label}</h3><p>${esc(e[k])}</p></section>`).join('')}${previous ? `<div class="notice"><div><strong>Vorige uitvoering · ${dateFmt(previous.date, { year: 'numeric' })}</strong><p>${previous.sets.map(st => esc(performanceText(st, m))).join(' / ')}</p></div></div>` : ''}`, snapshot ? `OEFENUITLEG · BEWAARDE VERSIE ${esc(s.programVersion)}` : 'JOUW OEFENINGENBOEK'));
+  showModal(dialogContent(esc(e.name), `<p class="lead">${esc(e.muscles)}</p>${id === 'standing_calf' ? `<figure class="exercise-illustration"><img src="./${id.replace('_','-')}.svg" width="520" height="265" alt="Zijaanzicht van ${esc(e.name)}: voorvoet op de steun, hiel rustig laten zakken en daarna omhoog duwen"><figcaption>Eigen schematische illustratie · enkelbeweging. Toestel en bewegingsuitslag verschillen per persoon; volg de uitleg hieronder.</figcaption></figure>` : ''}${prescribed.length ? `<div class="notice space-top"><div>${prescribed.map(p => `<p>${p.context ? `<strong>${esc(p.context)}:</strong> ` : ''}${p.sets} werksets × ${esc(p.reps)} · ${esc(p.rest)} rust</p>`).join('')}</div></div>` : id === 'scapular_pushup' ? '<div class="notice space-top">Warming-up Upper: 1 × 10–12 herhalingen, geen werkset.</div>' : ['dead_hang', 'assisted_hang'].includes(id) ? `<div class="notice space-top">${esc(id === 'dead_hang' ? program.finisher.upper_b : 'Optionele warming-up: 10–15 seconden ondersteund, alleen pijnvrij.')}</div>` : ''}<p class="lead" style="font-size:11px">${esc(reserveText(id))}</p>${snapshot ? `<p class="small muted">${esc(s.warmup)} ${esc(s.safety)}</p>${snapshot.note ? `<p>${esc(snapshot.note)}</p>` : ''}${snapshot.recordingMode !== 'best' ? `<details class="legacy-sets"><summary>Eerdere individuele sets · ${snapshot.sets.length}</summary>${snapshot.sets.map(st => `<p>${esc(performanceText(st, m))} · ${st.completed ? 'geregistreerd' : 'open'}${st.note ? ' · ' + esc(st.note) : ''}</p>`).join('')}</details>` : ''}` : `<p class="small muted">${esc(program.metadata.safety)}</p>`}${statsStrip(stats, m)}<p class="small muted">${esc(m.label)}</p>${detailProgress(stats, m, id)}${snapshot && workoutContext().editable && !['duration'].includes(m.kind) ? `<label class="step-size">Gewichtsstap <select data-weight-step="${ei}" aria-label="Gewichtsstap ${esc(e.name)}">${[.5,1,2.5,5].map(n => `<option value="${n}" ${weightStep(id) === n ? 'selected' : ''}>${num(n)} kg</option>`).join('')}</select></label>` : ''}${[['setup', '01 · Startpositie & opstelling'], ['movement', '02 · De beweging'], ['cues', '03 · Houding, aanspanning & ademhaling'], ['avoid', '04 · Veelgemaakte fouten'], ['adjust', '05 · Aanpassingen bij klachten']].map(([k, label]) => `<section class="instruction"><h3>${label}</h3><p>${esc(e[k])}</p></section>`).join('')}${previous ? `<div class="notice"><div><strong>Vorige uitvoering · ${dateFmt(previous.date, { year: 'numeric' })}</strong><p>${previous.sets.map(st => esc(performanceText(st, m))).join(' / ')}</p></div></div>` : ''}`, snapshot ? `OEFENUITLEG · BEWAARDE VERSIE ${esc(s.programVersion)}` : 'JOUW OEFENINGENBOEK'));
 }
 function detailProgress(stats, m, id) {
   if (!stats.runs.length) return '<p class="lead" style="font-size:12px">Nog geen trainingsgegevens. Je prestaties verschijnen hier na je eerste afgeronde werkset.</p>';
@@ -318,9 +317,9 @@ async function finishTraining(s) {
 }
 function refreshWorkoutProgress() {
   const ctx = workoutContext(), entries = ctx.entries;
-  const count = entries.reduce((n, e) => n + e.sets.filter(st => validSet(st, e.measurement)).length, 0);
-  const total = entries.reduce((n, e) => n + e.sets.filter(st => st.kind === 'work' && !e.optional).length, 0);
-  document.querySelectorAll('[data-training-progress]').forEach(el => el.textContent = `${count} / ${total} werksets`);
+  const count = entries.filter(exerciseDone).length;
+  const total = entries.length;
+  document.querySelectorAll('[data-training-progress]').forEach(el => el.textContent = `${count} / ${total} oefeningen`);
   const bar = $('[data-training-bar]'); if (bar) bar.style.width = (total ? Math.min(100, count / total * 100) : 0) + '%';
   document.querySelectorAll('input[data-set-field]').forEach(el => {
     const ei = Number(el.dataset.ei), si = Number(el.dataset.si), field = el.dataset.setField;
@@ -336,8 +335,8 @@ function download(name, content, type) {
 }
 function exportBackup() { download(`ritme-backup-${localDate()}.json`, JSON.stringify(makeBackup(state, program), null, 2), 'application/json'); toast('Je volledige back-up is gedownload. Bewaar hem op een veilige plek.'); }
 function exportCsv() {
-  const rows = [['training_id', 'datum', 'kalenderweek_maandag', 'weekvariant', 'training', 'trainingstatus', 'oefening_id', 'oefening', 'gewichtdefinitie', 'set', 'type', 'kg', 'herhalingen', 'seconden', 'meters', 'herhalingen_over', 'voltooid', 'overgeslagen', 'notitie']];
-  state.sessions.forEach(s => s.exercises.forEach(e => e.sets.forEach((st, i) => rows.push([s.id, s.date, s.weekMonday, s.variant, s.title, s.status, e.exerciseId, e.instruction.name, e.measurement.basis, i + 1, st.kind, st.kg, st.reps, st.seconds, st.meters, st.reserve, st.completed, st.skipped, st.note]))));
+  const rows = [['training_id', 'datum', 'kalenderweek_maandag', 'weekvariant', 'training', 'trainingstatus', 'oefening_id', 'oefening', 'gewichtdefinitie', 'set', 'type', 'kg', 'herhalingen', 'seconden', 'meters', 'herhalingen_over', 'voltooid', 'overgeslagen', 'notitie', 'registratiemodus', 'oefening_voltooid']];
+  state.sessions.forEach(s => s.exercises.forEach(e => e.sets.forEach((st, i) => rows.push([s.id, s.date, s.weekMonday, s.variant, s.title, s.status, e.exerciseId, e.instruction.name, e.measurement.basis, i + 1, st.kind, st.kg, st.reps, st.seconds, st.meters, st.reserve, st.completed, st.skipped, st.note, e.recordingMode || 'sets', exerciseDone(e)]))));
   const cell = v => { let text = String(v ?? ''); if (/^[=+\-@\t\r]/.test(text)) text = "'" + text; return '"' + text.replace(/"/g, '""') + '"'; };
   download(`ritme-sets-${localDate()}.csv`, '\ufeff' + rows.map(r => r.map(cell).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
 }
@@ -359,8 +358,10 @@ document.addEventListener('click', async event => {
   try {
     let s = session();
     const ei = Number(el.dataset.ei), si = Number(el.dataset.si);
-    if (['complete-set', 'add-set', 'skip-exercise', 'add-finisher', 'finish', 'pause', 'start', 'step', 'quick-weight'].includes(action) && !s) { s = ensureSession(); if (!s) return; }
-    const entry = s?.exercises[ei] || (['home', 'workout'].includes(view.page) ? workoutContext().entries[ei] : null), st = entry?.sets[si];
+    if (['complete-exercise', 'complete-set', 'add-set', 'skip-exercise', 'add-finisher', 'finish', 'pause', 'start', 'step', 'quick-weight'].includes(action) && !s) { s = ensureSession(); if (!s) return; }
+    const entry = s?.exercises[ei] || (['home', 'workout'].includes(view.page) ? workoutContext().entries[ei] : null);
+    if (entry && !entry.sets.length && action === 'step') entry.sets.push(newSet());
+    const st = entry?.sets[si];
     if (action === 'nav') { event.preventDefault(); go(el.dataset.page); return; }
     if (action === 'week') { view.weekOffset += Number(el.dataset.offset); render(); return; }
     if (action === 'this-week') { view.weekOffset = 0; render(); return; }
@@ -373,10 +374,11 @@ document.addEventListener('click', async event => {
     if (action === 'choose-workout') { const ctx = workoutContext(); if (ctx.week.monday !== currentWeek().monday || !ctx.week.official) return; view = { ...view, page: 'home', manualDay: ctx.day, manualWeek: ctx.week.monday, sessionId: ctx.s?.id, browsing: false, draftKey: null }; location.hash = 'home'; render(); window.scrollTo(0, 0); return; }
     if (action === 'exercise-options') { exerciseOptions(ei); return; }
     if (action === 'step') {
+      view.bestIndices ??= {}; view.bestIndices[s.id + ':' + ei] = si;
       const proposal = suggestedSet(entry, si, recordedSessions(), s);
       const field = el.dataset.field;
       st[field] = adjustNumber(st[field] ?? proposal[field], Number(el.dataset.direction), field === 'kg' ? weightStep(entry.exerciseId) : 1, field);
-      s.status = 'active'; s.updatedAt = new Date().toISOString(); await persist(); keepOpenRender(); return;
+      recordBest(entry, si); s.status = 'active'; s.updatedAt = new Date().toISOString(); await persist(); keepOpenRender(); return;
     }
     if (action === 'quick-weight') { const target = entry.sets.find(st => !st.completed && !st.skipped && st.kg === null); if (target) target.kg = Number(el.dataset.value); s.updatedAt = new Date().toISOString(); await persist(); keepOpenRender(); return; }
     if (action === 'exercise-stats') { modal.close(); view.statsExercise = el.dataset.exercise; view.chartMetric = 'average'; go('stats'); return; }
@@ -391,6 +393,27 @@ document.addEventListener('click', async event => {
       modal.close(); render(); window.scrollTo(0, 0); return;
     }
     if (action === 'set-more') { const extra = $(`#set-extra-${ei}-${si}`); extra.classList.toggle('open'); el.setAttribute('aria-expanded', String(extra.classList.contains('open'))); return; }
+    if (action === 'complete-exercise' && entry) {
+      const invalid = document.querySelector(`input[data-ei="${ei}"]:invalid`);
+      if (invalid) { invalid.reportValidity(); return; }
+      const wasDone = exerciseDone(entry);
+      if (!wasDone && st) {
+        const candidate = { ...st }, proposal = suggestedSet(entry, si, recordedSessions(), s);
+        for (const field of ['kg', 'reps', 'seconds', 'meters']) candidate[field] ??= proposal[field];
+        if (['kg', 'reps', 'seconds', 'meters'].some(field => st[field] !== null) && !setError(candidate, entry.measurement)) { Object.assign(st, candidate); recordBest(entry, si); }
+        else toast('Afgevinkt zonder beste set. Je kunt je prestatie later nog invullen.');
+      }
+      entry.exerciseCompleted = !wasDone;
+      s.updatedAt = new Date().toISOString(); await persist();
+      keepOpenRender();
+      const next = nextExerciseIndex(s.exercises);
+      const target = document.querySelector(`[data-exercise-card="${!wasDone && next >= 0 ? next : ei}"]`);
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduced) target?.animate([{ opacity: .65, transform: 'translateY(5px)' }, { opacity: 1, transform: 'none' }], { duration: 180 });
+      target?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+      target?.querySelector('.exercise-name')?.focus({ preventScroll: true });
+      return;
+    }
     if (action === 'complete-set' && st) {
       const invalid = document.querySelector(`input[data-ei="${ei}"][data-si="${si}"]:invalid`); if (invalid) { invalid.reportValidity(); return; }
       if (st.skipped) { st.skipped = false; entry.skippedReason = null; }
@@ -411,9 +434,9 @@ document.addEventListener('click', async event => {
     if (action === 'pause') { if (!s) return; s.status = s.status === 'paused' ? 'active' : 'paused'; s.updatedAt = new Date().toISOString(); await persist(); keepOpenRender(); toast(s.status === 'paused' ? 'Gepauzeerd. Je kunt op elk moment verder.' : 'Je training is hervat.'); return; }
     if (action === 'finish') {
       const invalid = document.querySelector('input:invalid'); if (invalid) { invalid.reportValidity(); return; }
-      const unfilled = s.exercises.reduce((n, e) => n + e.sets.filter(st => !st.completed && !st.skipped).length, 0);
+      const unfilled = s.exercises.filter(e => !exerciseDone(e)).length;
       if (!unfilled) { await finishTraining(s); return; }
-      confirmDialog('Training afronden?', unfilled ? `Er staan nog ${unfilled} sets open. Je mag de training nu afronden. Die sets tellen niet mee voor records of gemiddelden en blijven later aanpasbaar.` : 'Bewaar deze training als voltooid. Je resultaten staan klaar in je logboek en statistieken.', 'Training afronden', 'confirm-finish'); return;
+      confirmDialog('Training afronden?', unfilled ? `Er staan nog ${unfilled} oefeningen open. Je mag de training nu afronden. Alleen werkelijk geregistreerde prestaties tellen mee; open oefeningen blijven later aanpasbaar.` : 'Bewaar deze training als voltooid. Je resultaten staan klaar in je logboek en statistieken.', 'Training afronden', 'confirm-finish'); return;
     }
     if (action === 'confirm-finish') { await finishTraining(s); return; }
     if (action === 'reopen') { s.status = 'active'; s.completedAt = null; s.updatedAt = new Date().toISOString(); view.browsing = false; await persist(); render(); return; }
@@ -421,7 +444,7 @@ document.addEventListener('click', async event => {
     if (action === 'edit-date') { dateDialog('edit-date'); return; }
     if (action === 'delete-session') { confirmDialog('Training verwijderen?', 'Deze training en alle bijbehorende sets worden verwijderd. Maak eerst een back-up als je ze wilt bewaren.', 'Definitief verwijderen', 'confirm-delete-session', true); return; }
     if (action === 'confirm-delete-session') { state.sessions = state.sessions.filter(x => x.id !== s.id); await persist(); modal.close(); go('history'); toast('Training verwijderd.'); return; }
-    if (action === 'add-finisher') { s.exercises.push(exerciseEntry(program, { exercise_id: 'dead_hang', name: program.exercises.dead_hang.name, sets: 2, reps: '15–30 seconden', rest: 'Naar behoefte', is_variation: false, base_id: null }, true)); s.updatedAt = new Date().toISOString(); await persist(); keepOpenRender(); const card = document.querySelector('[data-exercise-card]:last-child'); if (card) { card.open = true; card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
+    if (action === 'add-finisher') { const extra = exerciseEntry(program, { exercise_id: 'dead_hang', name: program.exercises.dead_hang.name, sets: 2, reps: '15–30 seconden', rest: 'Naar behoefte', is_variation: false, base_id: null }, true); extra.sets = [extra.sets[0]]; extra.recordingMode = 'best'; extra.exerciseCompleted = false; s.exercises.push(extra); s.updatedAt = new Date().toISOString(); await persist(); keepOpenRender(); const card = document.querySelector('[data-exercise-card]:last-child'); if (card) { card.open = true; card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
     if (action === 'rest') {
       const rest = entry.prescription.rest.match(/\d+/g)?.map(Number);
       if (!rest) { toast('Neem voldoende rust; er staat geen vaste rustduur bij deze oefening.'); return; }
@@ -467,7 +490,10 @@ document.addEventListener('input', event => {
   const s = session() || (['home', 'workout'].includes(view.page) ? ensureSession() : null); if (!s || s.status === 'completed' || view.browsing) return;
   const ei = Number(el.dataset.ei), si = Number(el.dataset.si);
   if (el.hasAttribute('data-set-field')) {
-    const st = s.exercises[ei]?.sets[si]; if (!st || el.dataset.setField === 'kind') return;
+    const entry = s.exercises[ei]; if (!entry || el.dataset.setField === 'kind') return;
+    if (!entry.sets.length) entry.sets.push(newSet());
+    const st = entry.sets[si]; if (!st) return;
+    view.bestIndices ??= {}; view.bestIndices[s.id + ':' + ei] = si;
     const field = el.dataset.setField;
     if (field === 'note') st.note = el.value.slice(0, 10000);
     else {
@@ -477,6 +503,7 @@ document.addEventListener('input', event => {
       st[field] = invalid ? null : value;
       if (st.completed && setError(st, s.exercises[ei].measurement)) { st.completed = false; el.closest('.set-row')?.classList.remove('completed'); const check = el.closest('.set-row')?.querySelector('.set-check'); check?.classList.remove('checked'); check?.setAttribute('aria-pressed', 'false'); }
     }
+    recordBest(s.exercises[ei], si);
   } else if (el.hasAttribute('data-exercise-note')) s.exercises[ei].note = el.value.slice(0, 10000);
   else if (el.hasAttribute('data-session-note')) s.note = el.value.slice(0, 10000);
   else return;
@@ -484,7 +511,7 @@ document.addEventListener('input', event => {
 });
 document.addEventListener('change', async event => {
   const el = event.target;
-  if (el.id === 'active-training') { view.manualDay = el.value; view.manualWeek = currentWeek().monday; view.sessionId = null; view.draftKey = null; render(); return; }
+  if (el.id === 'active-training') { state.settings.trainingFocus = { day: el.value, weekMonday: currentWeek().monday }; await persist(); view.manualDay = el.value; view.manualWeek = currentWeek().monday; view.sessionId = null; view.draftKey = null; render(); return; }
   if (el.hasAttribute('data-weight-step')) { const ctx = workoutContext(); const id = ctx.entries[Number(el.dataset.weightStep)].exerciseId; state.settings.weightSteps ??= {}; state.settings.weightSteps[id] = Number(el.value); await persist(); return; }
   if (el.dataset.filter) { view[el.dataset.filter] = el.value; if (el.dataset.filter === 'statsExercise') view.chartMetric = 'average'; render(); return; }
   if (el.dataset.setting === 'theme') { state.settings.theme = el.value; applyTheme(); await persist(); return; }
@@ -506,8 +533,8 @@ modal.addEventListener('close', () => { modalReturnFocus?.focus?.(); if (afterMo
 window.addEventListener('hashchange', () => { const page = location.hash.slice(1); if (['home', 'schema', 'stats', 'library', 'more', 'history', 'settings'].includes(page) && page !== view.page) { go(page); } });
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; });
 navigator.serviceWorker?.addEventListener('controllerchange', () => { if (hadController) { updateReady = true; renderError(); } });
-window.addEventListener('online', () => render());
-window.addEventListener('offline', () => render());
+window.addEventListener('online', updateSaveStatus);
+window.addEventListener('offline', updateSaveStatus);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 function checkWeek() {
   const monday = mondayOf();
@@ -524,6 +551,6 @@ try {
   try { database = await new LocalStore().open(); state = await database.load(); }
   catch (e) { fatalError = 'Je bestaande logboek wordt niet overschreven. Lokale opslag kan niet worden geopend: ' + e.message; }
   const page = location.hash.slice(1); if (!matchMedia('(display-mode: standalone)').matches && !navigator.standalone && ['home', 'schema', 'stats', 'library', 'more', 'history', 'settings'].includes(page)) view.page = page;
-  render();
+  render(); window.scrollTo(0, 0);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
 } catch (e) { app.innerHTML = `<div class="boot"><span class="brand-mark">r.</span><h2>Je training staat nog even stil.</h2><p>${esc(e.message)}</p><button class="btn primary" onclick="location.reload()">Opnieuw proberen</button></div>`; }

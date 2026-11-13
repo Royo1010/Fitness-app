@@ -13,7 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     concurrency:
       group: ritme-build-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -30,6 +30,12 @@ jobs:
       # De app gebruikt uitsluitend ingebouwde Node-modules, geen npm-install nodig.
       - name: Test programma, gegevensbehoud en publicatie
         run: npm test
+      - name: Installeer geïsoleerde browsertesttools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ritme-browser" --no-audit --no-fund playwright@1.56.1
+          "$RUNNER_TEMP/ritme-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Test mobiele checklist en offline PWA
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ritme-browser/node_modules/playwright/index.mjs" node scripts/test-browser.mjs
       - name: Bouw Pages-artifact met unieke PWA-cacheversie
         run: npm run build:pages
       - name: Upload geteste website

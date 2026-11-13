@@ -61,7 +61,7 @@ export function canRegister(date, today = localDate()) {
 }
 export function suggestedSet(entry, index, sessions, context) {
   const latest = exerciseStats(sessions, entry.exerciseId, { excludeSession: context.id, before: context.date, basis: entry.measurement.basis }).latest;
-  const history = latest?.sets[index] || latest?.sets.at(-1);
+  const history = entry.recordingMode === 'best' ? latest?.sets.reduce((best, set) => !best || comparePerformance(set, best, entry.measurement) > 0 ? set : best, null) : latest?.sets[index] || latest?.sets.at(-1);
   const target = Number(entry.prescription.reps.match(/\d+/)?.[0]) || null;
   const result = {};
   for (const field of ['kg', 'reps', 'seconds', 'meters']) result[field] = entry.sets[index]?.[field] ?? entry.sets.slice(0, index).findLast(s => !s.skipped && s[field] !== null)?.[field] ?? history?.[field] ?? (field === 'reps' && !['duration', 'distance'].includes(entry.measurement.kind) ? target : field === 'seconds' && entry.measurement.kind === 'duration' ? target : field === 'meters' && entry.measurement.kind === 'distance' ? target : null);
@@ -110,6 +110,40 @@ export function createSession(program, day, variant, date = localDate()) {
   const time = new Date().toISOString();
   return { id: uid(), schemaVersion: SCHEMA, programVersion: program.metadata.version, timeZone: ZONE, date, weekMonday: mondayOf(date), day, variant, title: trainingTitle(day, variant), status: 'active', startedAt: time, updatedAt: time, completedAt: null, note: '', warmup: program.warmup[day.startsWith('upper') ? 'upper' : 'lower'], safety: program.metadata.safety, exercises: program.week_programs[variant][day].map(s => exerciseEntry(program, s)) };
 }
+// Additief model: oude sets blijven onaangeraakt; nieuwe trainingen loggen één beste set.
+export function createBestSession(program, day, variant, date = localDate()) {
+  const session = createSession(program, day, variant, date);
+  session.recordingMode = 'best';
+  for (const entry of session.exercises) {
+    entry.recordingMode = 'best'; entry.exerciseCompleted = false;
+    entry.sets = [entry.sets[0]];
+  }
+  return session;
+}
+export function bestSetIndex(entry) {
+  let best = -1;
+  entry.sets.forEach((set, i) => {
+    if (!validSet(set, entry.measurement)) return;
+    if (best < 0 || comparePerformance(set, entry.sets[best], entry.measurement) > 0) best = i;
+  });
+  return best < 0 ? 0 : best;
+}
+export function comparePerformance(a, b, m) {
+  const primary = ['weight', 'distance'].includes(m.kind) || m.optionalWeight ? 'kg' : metricFor(m);
+  const secondary = m.kind === 'distance' ? 'meters' : 'reps';
+  return (a[primary] ?? 0) - (b[primary] ?? 0) || (a[secondary] ?? 0) - (b[secondary] ?? 0);
+}
+export function exerciseDone(entry) {
+  return entry.exerciseCompleted ?? (entry.sets.length > 0 && entry.sets.every(s => s.completed || s.skipped));
+}
+export function orderedExercises(entries) {
+  return entries.map((entry, index) => ({ entry, index })).sort((a, b) => Number(exerciseDone(a.entry)) - Number(exerciseDone(b.entry)));
+}
+export function nextExerciseIndex(entries) { return entries.findIndex(e => !exerciseDone(e)); }
+export function recordBest(entry, index = 0) {
+  const set = entry.sets[index];
+  if (set) set.completed = !setError(set, entry.measurement);
+}
 export function validSet(set, m) {
   if (!set.completed || set.skipped || set.kind !== 'work') return false;
   const pos = v => typeof v === 'number' && Number.isFinite(v) && v > 0;
@@ -142,7 +176,7 @@ export function exerciseStats(sessions, id, options = {}) {
       const sets = entry.sets.filter(s => validSet(s, entry.measurement));
       if (!sets.length) continue;
       const metric = metricFor(entry.measurement);
-      runs.push({ sessionId: session.id, date: session.date, startedAt: session.startedAt, title: session.title, basis: entry.measurement.basis, measurement: entry.measurement, sets, average: mean(sets.map(s => s[metric])), loadAverage: mean(sets.filter(s => s.kg !== null).map(s => s.kg)), reps: sets.reduce((a, s) => a + (s.reps ?? 0), 0), volume: entry.measurement.kind === 'weight' ? sets.reduce((a, s) => a + s.kg * s.reps, 0) : null });
+      runs.push({ sessionId: session.id, date: session.date, startedAt: session.startedAt, title: session.title, recordingMode: entry.recordingMode || 'sets', basis: entry.measurement.basis, measurement: entry.measurement, sets, average: mean(sets.map(s => s[metric])), loadAverage: mean(sets.filter(s => s.kg !== null).map(s => s.kg)), reps: sets.reduce((a, s) => a + (s.reps ?? 0), 0), volume: entry.measurement.kind === 'weight' ? sets.reduce((a, s) => a + s.kg * s.reps, 0) : null });
     }
   }
   runs.sort((a, b) => a.date.localeCompare(b.date) || a.startedAt.localeCompare(b.startedAt) || a.sessionId.localeCompare(b.sessionId));
@@ -152,11 +186,11 @@ export function exerciseStats(sessions, id, options = {}) {
   if (!filtered.length) return { runs: [], pr: null, average: null, recentAverage: null, averageReps: null, latest: null, sets: 0, records: [], load: null };
   const metric = metricFor(filtered[0].measurement);
   const all = filtered.flatMap(r => r.sets.map(s => ({ ...s, date: r.date, sessionId: r.sessionId })));
-  const pr = all.reduce((best, s) => !best || s[metric] > best[metric] ? s : best, null);
+  const pr = all.reduce((best, s) => !best || s[metric] > best[metric] || s[metric] === best[metric] && (s.reps ?? 0) > (best.reps ?? 0) ? s : best, null);
   let best = -Infinity;
   const records = filtered.flatMap(r => { const max = Math.max(...r.sets.map(s => s[metric])); if (max <= best) return []; best = max; return [{ date: r.date, value: max, sessionId: r.sessionId }]; });
   const loaded = all.filter(s => s.kg !== null);
-  const load = loaded.length ? { pr: loaded.reduce((best, s) => !best || s.kg > best.kg ? s : best, null), average: mean(loaded.map(s => s.kg)), recentAverage: mean(filtered.slice(-5).flatMap(r => r.sets.filter(s => s.kg !== null).map(s => s.kg))) } : null;
+  const load = loaded.length ? { pr: loaded.reduce((best, s) => !best || s.kg > best.kg || s.kg === best.kg && (s.meters ?? s.reps ?? 0) > (best.meters ?? best.reps ?? 0) ? s : best, null), average: mean(loaded.map(s => s.kg)), recentAverage: mean(filtered.slice(-5).flatMap(r => r.sets.filter(s => s.kg !== null).map(s => s.kg))) } : null;
   return { runs: filtered, pr, average: mean(all.map(s => s[metric])), recentAverage: mean(filtered.slice(-5).flatMap(r => r.sets.map(s => s[metric]))), averageReps: mean(all.filter(s => s.reps !== null).map(s => s.reps)), latest: filtered.at(-1), sets: all.length, records, load };
 }
 export function weekProgress(sessions, monday, variant) {
@@ -182,6 +216,7 @@ export function validateState(state) {
   assert(anchor === null || (isDate(anchor) && mondayOf(anchor) === anchor), 'de startdatum moet een maandag zijn.');
   if (state.settings.weightSteps !== undefined) assert(plain(state.settings.weightSteps) && Object.entries(state.settings.weightSteps).every(([k, v]) => textOk(k, 100) && [.5, 1, 2.5, 5].includes(v)), 'ongeldige gewichtsstap.');
   assert(Array.isArray(state.sessions) && state.sessions.length <= 50000, 'trainingen ontbreken of bestand te groot.');
+  if (state.settings.trainingFocus !== undefined) assert(plain(state.settings.trainingFocus) && DAYS.includes(state.settings.trainingFocus.day) && isDate(state.settings.trainingFocus.weekMonday) && mondayOf(state.settings.trainingFocus.weekMonday) === state.settings.trainingFocus.weekMonday, 'ongeldige trainingsselectie.');
   const ids = new Set();
   for (const session of state.sessions) {
     assert(plain(session) && textOk(session.id, 100) && session.id.length > 0 && !ids.has(session.id), 'dubbele of ontbrekende training-ID.'); ids.add(session.id);
@@ -193,6 +228,7 @@ export function validateState(state) {
     assert((session.status === 'completed') === (session.completedAt !== null), 'afrondstatus en afrondtijd verschillen.');
     assert(textOk(session.note) && textOk(session.warmup) && textOk(session.safety), 'trainingsinformatie ontbreekt.');
     assert(Array.isArray(session.exercises) && session.exercises.length > 0 && session.exercises.length <= 100, 'oefeningen ontbreken.');
+    assert(session.recordingMode === undefined || session.recordingMode === 'best', 'onbekende registratiemodus.');
     const exerciseIds = new Set();
     for (const e of session.exercises) {
       assert(plain(e) && textOk(e.exerciseId, 100) && e.exerciseId.length > 0 && !exerciseIds.has(e.exerciseId), 'oefening-ID ontbreekt of is dubbel.'); exerciseIds.add(e.exerciseId);
@@ -204,6 +240,9 @@ export function validateState(state) {
       assert(bases[m.kind].includes(m.basis) && m.unit === { weight: 'kg', distance: 'm', duration: 's', reps: 'herh.' }[m.kind], 'meettype en gewichtsdefinitie verschillen.');
       assert((e.skippedReason === null || textOk(e.skippedReason, 250)) && textOk(e.note) && typeof e.optional === 'boolean', 'oefeningstatus klopt niet.');
       assert(Array.isArray(e.sets) && e.sets.length <= 200, 'sets ontbreken of te veel sets.');
+      assert(e.recordingMode === undefined || e.recordingMode === 'best', 'onbekende oefenregistratie.');
+      assert(e.exerciseCompleted === undefined || typeof e.exerciseCompleted === 'boolean', 'ongeldige oefenvoltooiing.');
+      assert(e.recordingMode !== 'best' || e.sets.length === 1 && typeof e.exerciseCompleted === 'boolean', 'beste-setregistratie vereist precies één set.');
       const setIds = new Set();
       for (const s of e.sets) {
         assert(plain(s) && textOk(s.id, 100) && s.id.length > 0 && !setIds.has(s.id), 'dubbele of ontbrekende set-ID.'); setIds.add(s.id);
