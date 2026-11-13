@@ -2,7 +2,7 @@ name: Controleer en publiceer Ritme
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'codex/**']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -29,6 +29,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Controleer automatiseringsbeveiliging
+        working-directory: .
+        run: node --test .github/scripts/*.test.cjs
       # De app gebruikt uitsluitend ingebouwde Node-modules, geen npm-install nodig.
       - name: Test programma, gegevensbehoud en publicatie
         run: npm test
