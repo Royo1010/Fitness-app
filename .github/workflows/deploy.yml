@@ -12,7 +12,9 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1 ondersteunt Ubuntu 26.04 nog niet.
+    # Zet de browsertests vast op Ubuntu 24.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: ritme-build-${{ github.event.pull_request.number || github.ref }}
