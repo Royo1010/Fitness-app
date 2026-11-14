@@ -1,6 +1,6 @@
 export const ZONE = 'Europe/Amsterdam';
 export const SCHEMA = 1;
-export const DAYS = ['lower_a', 'upper_a', 'lower_b', 'upper_b'];
+export const DAYS = ['upper_a', 'lower_a', 'upper_b', 'lower_b'];
 const DAY_MS = 86400000;
 const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
 
@@ -37,13 +37,12 @@ export function isoWeek(date = localDate()) {
   const number = Math.round((Date.parse(mondayOf(date)) - Date.parse(firstMonday)) / DAY_MS / 7) + 1;
   return { number, year };
 }
-export function trainingWeek(date = localDate()) {
-  const w = weekFor(PROGRAM_START, date);
-  const official = w.monday >= PROGRAM_START;
-  return { ...w, variant: official ? w.variant : 1, official, trainingNumber: official ? w.weeks + 1 : null, iso: isoWeek(w.monday) };
+export function trainingWeek(date = localDate(), anchor = PROGRAM_START) {
+  const w = weekFor(anchor, date);
+  return { ...w, official: true, trainingNumber: w.weeks + 1, iso: isoWeek(w.monday), anchor };
 }
 export function trainingTitle(day, variant) {
-  return ({ lower_a: 'Lower A', upper_a: 'Upper A', lower_b: 'Lower B', upper_b: 'Upper B' })[day] + variant;
+  return ({ lower_a: 'Lower A', upper_a: 'Upper A', lower_b: 'Lower B', upper_b: 'Upper B' })[day] + (variant === 1 ? '' : variant);
 }
 export function recordedBefore(sessions, asOf = localDate()) { return sessions.filter(s => s.date <= asOf); }
 export function trainingSelection(sessions, week = trainingWeek(), asOf = localDate()) {
@@ -57,7 +56,7 @@ export function trainingSelection(sessions, week = trainingWeek(), asOf = localD
   return { rows, completed: rows.filter(r => r.completed).length, next: rows.find(r => !r.completed)?.day ?? null };
 }
 export function canRegister(date, today = localDate()) {
-  return isDate(date) && date >= PROGRAM_START && date <= today;
+  return isDate(date) && date <= today;
 }
 export function suggestedSet(entry, index, sessions, context) {
   const latest = exerciseStats(sessions, entry.exerciseId, { excludeSession: context.id, before: context.date, basis: entry.measurement.basis }).latest;
@@ -87,7 +86,7 @@ export function measurement(id) {
   if (['scapular_pushup', 'hanging_knee'].includes(id)) return { kind: 'reps', basis: 'bodyweight_plus', label: 'Lichaamsgewicht', unit: 'herh.', optionalWeight: id === 'hanging_knee' };
   if (['back_extension', 'bulgarian', 'reverse_lunge'].includes(id)) return { kind: 'reps', basis: 'total_external', label: 'Totale toegevoegde kg (optioneel)', unit: 'herh.', optionalWeight: true };
   if (['flat_db_press', 'low_incline_db_press', 'chest_supported_db_row', 'side_lying_ext_rotation', 'db_curl', 'hammer_curl', 'reverse_wrist_curl', 'wrist_curl'].includes(id)) return weight('per_dumbbell', 'kg per dumbbell');
-  if (['hip_thrust', 'landmine_rotation'].includes(id)) return weight('total_barbell', 'kg totaal, inclusief stang');
+  if (['hip_thrust', 'landmine_rotation', 'conventional_deadlift', 'barbell_bent_over_row'].includes(id)) return weight('total_barbell', 'kg totaal, inclusief stang');
   return weight('machine_stack', 'kg op machine / gewichtsstapel');
 }
 export function reserveText(id) {
@@ -119,6 +118,26 @@ export function createBestSession(program, day, variant, date = localDate()) {
     entry.sets = [entry.sets[0]];
   }
   return session;
+}
+export function allSessionEntries(session) { return [...session.exercises, ...(session.archivedExercises || [])]; }
+export function choiceHasData(entry) {
+  return exerciseDone(entry) || entry.note || entry.sets.some(set => ['kg','reps','seconds','meters','reserve'].some(field => set[field] !== null) || set.note || set.completed);
+}
+export function switchChoice(session, index, id, program) {
+  const current = session.exercises[index], options = current.prescription.choice_options;
+  const spec = options?.find(option => option.exercise_id === id);
+  if (!spec || !program.exercises[id]) throw new Error('Onbekende keuzeoefening.');
+  if (current.exerciseId === id) return;
+  const archived = session.archivedExercises || [];
+  let next = archived.find(e => e.exerciseId === id && e.prescription.choice_key === current.prescription.choice_key);
+  if (!next) {
+    next = exerciseEntry(program, { ...spec, choice_key: current.prescription.choice_key, choice_options: structuredClone(options) });
+    if (session.recordingMode === 'best') { next.recordingMode = 'best'; next.exerciseCompleted = false; next.sets = [next.sets[0]]; }
+  }
+  session.archivedExercises = archived.filter(e => e.exerciseId !== id && e.exerciseId !== current.exerciseId);
+  if (choiceHasData(current)) session.archivedExercises.push(current);
+  session.exercises[index] = next;
+  session.updatedAt = new Date().toISOString();
 }
 export function bestSetIndex(entry) {
   let best = -1;
@@ -170,7 +189,7 @@ export function exerciseStats(sessions, id, options = {}) {
   const runs = [];
   for (const session of sessions) {
     if (session.id === options.excludeSession || (options.before && session.date > options.before)) continue;
-    for (const entry of session.exercises) {
+    for (const entry of allSessionEntries(session)) {
       if (entry.exerciseId !== id) continue;
       if (options.basis && entry.measurement.basis !== options.basis) continue;
       const sets = entry.sets.filter(s => validSet(s, entry.measurement));
@@ -229,11 +248,13 @@ export function validateState(state) {
     assert(textOk(session.note) && textOk(session.warmup) && textOk(session.safety), 'trainingsinformatie ontbreekt.');
     assert(Array.isArray(session.exercises) && session.exercises.length > 0 && session.exercises.length <= 100, 'oefeningen ontbreken.');
     assert(session.recordingMode === undefined || session.recordingMode === 'best', 'onbekende registratiemodus.');
+    assert(session.archivedExercises === undefined || Array.isArray(session.archivedExercises) && session.archivedExercises.length <= 100, 'ongeldig keuzearchief.');
     const exerciseIds = new Set();
-    for (const e of session.exercises) {
+    for (const e of allSessionEntries(session)) {
       assert(plain(e) && textOk(e.exerciseId, 100) && e.exerciseId.length > 0 && !exerciseIds.has(e.exerciseId), 'oefening-ID ontbreekt of is dubbel.'); exerciseIds.add(e.exerciseId);
       assert(plain(e.instruction) && ['name', 'muscles', 'setup', 'movement', 'cues', 'avoid', 'adjust'].every(k => textOk(e.instruction[k])), 'oefenuitleg ontbreekt.');
       assert(plain(e.prescription) && e.prescription.exercise_id === e.exerciseId && Number.isInteger(e.prescription.sets) && e.prescription.sets > 0 && e.prescription.sets <= 100 && textOk(e.prescription.reps, 100) && textOk(e.prescription.rest, 100), 'oefenvoorschrift klopt niet.');
+      if (e.prescription.choice_options !== undefined) assert(Array.isArray(e.prescription.choice_options) && e.prescription.choice_options.length === 2 && e.prescription.choice_options.some(o => o.exercise_id === e.exerciseId) && e.prescription.choice_options.every(o => plain(o) && textOk(o.exercise_id,100) && Number.isInteger(o.sets) && o.sets > 0 && textOk(o.reps,100) && textOk(o.rest,100)), 'ongeldige keuzeoefening.');
       const m = e.measurement;
       assert(plain(m) && ['weight', 'duration', 'distance', 'reps'].includes(m.kind) && ['per_dumbbell', 'per_hand', 'machine_stack', 'total_barbell', 'total_external', 'bodyweight', 'bodyweight_plus'].includes(m.basis) && textOk(m.label, 150) && textOk(m.unit, 30), 'meeteenheid klopt niet.');
       const bases = { weight: ['per_dumbbell', 'machine_stack', 'total_barbell', 'total_external'], distance: ['per_hand'], duration: ['bodyweight'], reps: ['bodyweight', 'bodyweight_plus', 'total_external'] };

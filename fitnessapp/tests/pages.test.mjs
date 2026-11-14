@@ -27,7 +27,7 @@ test('Pages-build is herhaalbaar, cache verandert bij gewijzigde bron, opslag bl
     for (const file of ['storage.mjs', 'core.mjs', 'program.json', 'manifest.webmanifest']) {
       assert.deepEqual(await readFile(path.join(output, file)), await readFile(path.join(source, file)));
     }
-    assert.deepEqual(JSON.parse(await readFile(path.join(output, 'release.json'))), { version: '2.1.0', commit: 'commit-three', contentHash: second });
+    assert.deepEqual(JSON.parse(await readFile(path.join(output, 'release.json'))), { version: '2.2.0', commit: 'commit-three', contentHash: second });
     assert.equal(await readFile(path.join(output, '.nojekyll'), 'utf8'), '');
     // Voer de gegenereerde worker uit: alle offline-assets bestaan onder het Pages-subpad.
     const events = {}; let requests, pending;
