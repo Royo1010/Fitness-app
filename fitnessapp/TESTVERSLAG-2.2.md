@@ -1,5 +1,7 @@
 # Ritme 2.2 — verificatie
 
+> Historisch testverslag. De oefenillustratie en de bijbehorende laadtest zijn op verzoek verwijderd in de designupdate. De huidige tekstgidsen en controles staan in [TESTVERSLAG-DESIGN.md](TESTVERSLAG-DESIGN.md).
+
 ## Bronnen en behoud
 
 De drie aangeleverde bestanden staan ongewijzigd in `sources/`. De JSON is leidend; de leesbare bron levert de volledige nieuwe row-techniek. De app normaliseert de bestaande oefening-ID’s om oude historie te behouden. Alle 35 bestaande gedetailleerde instructies blijven inhoudelijk exact gelijk; deadlift en barbell row voegen twee eigen beschrijvingen en ID’s toe.

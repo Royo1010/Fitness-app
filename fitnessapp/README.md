@@ -14,7 +14,7 @@ Typ rechtstreeks, gebruik komma of punt, of pas waarden aan met plus/min. De vor
 
 Open oefeningen staan in de oorspronkelijke volgorde bovenaan, afgevinkte oefeningen onderaan. Tik opnieuw op het vinkje om een oefening te activeren; je invoer blijft staan. Je trainingskeuze, vinkjes en invoer worden bewaard. Bij heropenen staat de eerstvolgende open oefening bovenaan. Wanneer alles afgevinkt is verschijnt een compacte afrondmelding. Training afronden selecteert de volgende open training binnen dezelfde kalenderweek.
 
-De informatieknop bevat alle oorspronkelijke technische instructies, aandachtspunten, fouten, spiergroepen, eerdere prestaties en records. Veiligheidsinformatie blijft daar en via Meer → Instellingen beschikbaar. Voor Standing calf raise is een kleine originele offline SVG toegevoegd; voor de overige oefeningen worden geen onbevestigde afbeeldingen getoond. Zie `ILLUSTRATIES.md`.
+Elke oefenkaart toont een Nederlands spiergroeplabel. De informatieknop opent een tekstgids met herkenning van het apparaat, startpositie, genummerde uitvoering, aandachtspunten, gerichte klachtenaanpassingen en je ongewijzigde prestaties. De 37 gidsen werken ook offline. Algemene veiligheidsinformatie staat onder Meer → Instellingen; in de gids staan alleen oefenspecifieke aanpassingen. Oefenafbeeldingen zijn verwijderd; app- en navigatie-iconen blijven behouden. Week- en varianttoevoegingen verdwijnen uitsluitend uit weergegeven namen, niet uit bewaarde registraties. Zie `TESTVERSLAG-DESIGN.md`.
 
 ## Rotatie en gegevensbehoud
 

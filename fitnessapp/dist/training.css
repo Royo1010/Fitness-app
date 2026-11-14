@@ -169,9 +169,6 @@
 .v2 .number-stepper>button{width:32px;min-width:28px}
 .v2 .set-row .set-check{border-radius:9px}
 .checklist-complete{padding:15px;font-size:12px;background:var(--soft);border-radius:12px;margin-top:14px;color:var(--green)}
-.exercise-illustration{margin:16px 0;background:var(--soft);border-radius:12px;overflow:hidden}
-.exercise-illustration img{display:block;width:100%;height:auto;max-height:240px;object-fit:contain}
-.exercise-illustration figcaption{padding:0 12px 12px;font-size:10px;color:var(--muted)}
 .legacy-sets{margin:16px 0;font-size:12px;line-height:1.8}
 .legacy-sets summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 @media(prefers-reduced-motion:reduce){.v2 *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
@@ -183,3 +180,119 @@ html{overscroll-behavior-y:none}
 .effort-instruction{font-size:10px;color:var(--muted);padding:2px 15px 0;line-height:1.5}
 .exercise-choice{display:block;padding:8px 15px 0;font-size:10px;color:var(--muted)}
 .exercise-choice select{display:block;margin-top:5px;min-height:44px;font-size:16px;width:100%;background:var(--card)}
+
+/* Ritme: clear training cards and text-first exercise guides. */
+:root{--bg:#eef2f5;--card:#fff;--ink:#193e3b;--muted:#526674;--line:#cbd6dd;--green:#12685f;--lime:#d6ede5;--soft:#e5f1ef;--field:#f0f5f7;--on-accent:#fff;--success-bg:#e8f4ee;--success-ink:#185b43;--focus:#12685f;color:var(--ink);background:var(--bg)}
+[data-theme=dark]{--bg:#111c25;--card:#1b2a35;--ink:#edf5f6;--muted:#b6c8d2;--line:#425762;--green:#88d8c8;--lime:#264a46;--soft:#243d45;--field:#14232e;--on-accent:#102b28;--success-bg:#203f39;--success-ink:#a7e4c7;--focus:#88d8c8;color:var(--ink);background:var(--bg)}
+[data-muscle-group=chest]{--muscle-ink:#225989;--muscle-bg:#e8f0fc}
+[data-muscle-group=back]{--muscle-ink:#00685d;--muscle-bg:#e3f3ef}
+[data-muscle-group=shoulders]{--muscle-ink:#713d83;--muscle-bg:#f4eaf8}
+[data-muscle-group=arms]{--muscle-ink:#8f4517;--muscle-bg:#fff1e2}
+[data-muscle-group=legs]{--muscle-ink:#3f508b;--muscle-bg:#edf0fb}
+[data-muscle-group=glutes]{--muscle-ink:#944552;--muscle-bg:#faedf0}
+[data-muscle-group=core]{--muscle-ink:#7b5a13;--muscle-bg:#faf2d9}
+[data-muscle-group=grip],[data-muscle-group=other]{--muscle-ink:#46556e;--muscle-bg:#edf0f6}
+[data-theme=dark] [data-muscle-group=chest]{--muscle-ink:#b5d6ff;--muscle-bg:#233f5a}
+[data-theme=dark] [data-muscle-group=back]{--muscle-ink:#9ae0d1;--muscle-bg:#203f3c}
+[data-theme=dark] [data-muscle-group=shoulders]{--muscle-ink:#e3bff1;--muscle-bg:#44304f}
+[data-theme=dark] [data-muscle-group=arms]{--muscle-ink:#ffd0a5;--muscle-bg:#4b3527}
+[data-theme=dark] [data-muscle-group=legs]{--muscle-ink:#c8d2ff;--muscle-bg:#303b59}
+[data-theme=dark] [data-muscle-group=glutes]{--muscle-ink:#ffc5d1;--muscle-bg:#4e303d}
+[data-theme=dark] [data-muscle-group=core]{--muscle-ink:#efd49a;--muscle-bg:#443c28}
+[data-theme=dark] [data-muscle-group=grip]{--muscle-ink:#cedaef;--muscle-bg:#334155}
+.sidebar,[data-theme=dark] .sidebar{background:var(--card)}
+.nav button.active,[data-theme=dark] .nav button.active,.v2 .mobile-nav button.active{background:var(--soft);color:var(--green)}
+.btn.primary,[data-theme=dark] .btn.primary,.brand-mark,[data-theme=dark] .brand-mark{background:var(--green);color:var(--on-accent)}
+.btn.primary:hover{background:color-mix(in srgb,var(--green) 88%,var(--ink))}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--focus)}
+.v2 .training-content{max-width:780px}
+.training-home .training-content{padding-top:max(22px,env(safe-area-inset-top))}
+.v2 .training-weekline{font-size:12px;margin-bottom:16px}
+.v2 .training-weekline .tag{font-size:11px;font-weight:600}
+.v2 .training-title-row h1{font-size:34px;letter-spacing:-1.2px}
+.training-title-row p{font-size:13px;line-height:1.5;max-width:230px}
+.v2 .training-switch select{font-size:16px;border-color:var(--line);border-radius:12px;padding-left:12px}
+.training-progress-row{font-size:12px;margin:20px 0}
+.linear-progress{height:6px}.linear-progress>span{background:var(--green)}
+.v2 .exercise-list{gap:14px}
+.v2 .exercise-compact,.v2 .exercise-compact:nth-child(even){background:var(--card);border-radius:18px;border:1px solid var(--line);box-shadow:0 3px 12px #16374806}
+.v2 .exercise-compact.exercise-next{border-color:var(--green);box-shadow:inset 3px 0 var(--green)}
+.v2 .exercise-compact.exercise-done{background:var(--success-bg);border-color:var(--line)}
+.v2 .exercise-top{align-items:flex-start;gap:10px;padding:14px 12px 0 16px}
+.exercise-heading{flex:1;min-width:0}
+.v2 .exercise-top .exercise-number{width:30px;height:30px;margin-top:2px;background:var(--soft);color:var(--green);font-weight:600}
+.v2 .exercise-top .exercise-name{font-size:16px;line-height:1.35;min-height:30px;padding:3px 0 4px;letter-spacing:-.15px;color:var(--ink);font-weight:650}
+.v2 .exercise-top .exercise-info{width:44px;min-width:44px;height:44px;color:var(--green);background:var(--field);border-radius:12px}
+.v2 .exercise-top .exercise-info svg{width:21px;height:21px}
+.muscle-badge{display:inline-block;max-width:100%;padding:4px 8px;border-radius:7px;background:var(--muscle-bg);color:var(--muscle-ink);font-size:11px;font-weight:600;line-height:1.4;margin-top:3px}
+.v2 .exercise-compact>.exercise-prescription{padding:10px 16px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--ink);font-size:13px;line-height:1.5}
+.exercise-prescription strong{font-weight:600}.exercise-prescription>span:not(.exercise-count){display:inline-flex;align-items:center;gap:5px;margin:0;color:var(--muted)}
+.exercise-prescription svg{width:14px;height:14px}
+.effort-instruction{font-size:12px;padding:5px 16px 0;line-height:1.55}
+.exercise-choice{padding:10px 16px 0;font-size:12px}.exercise-choice select{border-color:var(--line);border-radius:10px}
+.v2 .exercise-body{padding:0 16px 14px}
+.best-label{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12px}
+.best-label>.exercise-state{font-size:11px;font-weight:550;color:var(--muted)}
+.exercise-next .best-label>.exercise-state{color:var(--green)}
+.exercise-done .best-label>.exercise-state{color:var(--success-ink)}
+.v2 .set-head,.v2 .set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 52px;gap:8px}
+.v2 .set-head{font-size:11px;letter-spacing:0;margin:8px 0 5px;line-height:1.3}
+.v2 .number-stepper{height:52px;border-radius:12px;background:var(--field);border-color:var(--line)}
+.v2 .number-stepper>button{width:44px;min-width:44px;height:50px;min-height:44px;color:var(--green);font-size:24px}
+.v2 .number-stepper>button:active{background:var(--green);color:var(--on-accent)}
+.v2 .number-stepper>input{font-size:19px;height:50px;font-weight:600;min-width:24px}
+.v2 .number-stepper.suggested>input{color:var(--muted);font-weight:450}
+.v2 .set-row .set-check{width:52px;height:52px;border-radius:12px;background:var(--soft);border:1px solid var(--green);color:var(--green);align-content:center;gap:0}
+.v2 .set-check svg{width:22px;height:22px}.v2 .set-check>span{font-size:9px;line-height:1.3}
+.v2 .set-check.checked,[data-theme=dark] .v2 .set-check.checked,.v2 .exercise-done .exercise-number{background:var(--green);color:var(--on-accent)}
+.v2 .set-row.completed .number-stepper,[data-theme=dark] .v2 .set-row.completed .number-stepper{background:var(--card);border-color:var(--line)}
+.weight-convention{font-size:10px;line-height:1.5;padding:6px 0 0}
+.v2 .single-measure .set-head,.v2 .single-measure .set-row{grid-template-columns:minmax(0,1fr) 52px}
+.single-measure .set-head>span:nth-child(2),.single-measure .set-row>span:empty{display:none}
+.v2 .finish-bar{padding:16px 0;box-shadow:none;border-color:var(--line)}
+.v2 .mobile-nav{border-color:var(--line);box-shadow:0 -4px 20px #162e3b07}
+.v2 .mobile-nav button{font-size:10px;min-height:54px}.v2 .mobile-nav svg{width:22px;height:22px}
+.schema-row.next,[data-theme=dark] .schema-row.next{border-color:var(--green);background:var(--soft)}
+.schema-row small{font-size:12px;line-height:1.5}.schema-row .schema-status{font-size:11px}
+.more-list>button>svg:first-child,.warmup-compact summary>svg:first-child{color:var(--green)}
+.v2 .library-item{border-radius:14px;padding:16px;gap:12px}.v2 .library-item h3{font-size:15px;line-height:1.4;margin-bottom:3px}
+.library-item .muscle-badge{font-size:12px}.library-item .grow{min-width:0;flex:1}
+.exercise-meta{gap:12px;border:0;padding:0;margin:16px 0}
+.exercise-meta>div{background:var(--field);padding:13px;border:1px solid var(--line);border-radius:12px;min-width:0}
+.exercise-meta small{display:block;font-size:11px;line-height:1.5;text-transform:none;letter-spacing:0;color:var(--muted)}
+.exercise-meta strong{font-size:20px;font-weight:650;line-height:1.4;margin:5px 0;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.stat-card .stat-value{font-variant-numeric:tabular-nums}.sparkline path{stroke:var(--green)}.sparkline circle{fill:var(--green)}
+.modal-head{padding:24px 22px 18px;gap:12px}.modal-head>div{min-width:0;flex:1}
+.modal-head h2{font-size:24px;line-height:1.25;letter-spacing:-.6px;outline:none}
+.modal-head .eyebrow{font-size:10px;letter-spacing:1.5px;margin-bottom:8px}
+.modal-head .icon-btn{margin:0;width:44px;height:44px;background:var(--field);border:1px solid var(--line);border-radius:12px;color:var(--ink)}
+.modal-head .icon-btn:active{background:var(--soft)}
+.modal-body{padding:20px 22px calc(24px + env(safe-area-inset-bottom))}
+.exercise-guide{font-size:14px;line-height:1.65}.guide-intro>.muscle-badge{font-size:13px;padding:5px 10px;margin:0 0 7px}
+.guide-secondary{font-size:12px;color:var(--muted);margin-bottom:14px}.guide-intro>p:last-child{font-size:15px;line-height:1.7}
+.modal-body .exercise-guide .instruction{margin:24px 0}
+.exercise-guide .instruction h3,.guide-performance>h3{font-size:16px;line-height:1.5;font-weight:650;letter-spacing:-.2px;display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.exercise-guide .instruction p,.exercise-guide .instruction li{font-size:14px;line-height:1.75;color:var(--muted)}
+.guide-number{font-size:11px;letter-spacing:.3px;font-weight:650;background:var(--soft);color:var(--green);border-radius:7px;padding:4px 6px;flex-shrink:0}
+.guide-equipment{background:var(--field);border:1px solid var(--line);border-radius:14px;padding:16px}
+.guide-equipment h3:before{content:'';width:4px;height:17px;border-radius:3px;background:var(--green)}
+.guide-dosage{background:var(--soft);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--ink)}
+.guide-dosage p+p{margin-top:6px}.guide-dosage .guide-effort{font-size:12px;color:var(--muted);padding-top:8px;border-top:1px solid var(--line);margin-top:10px}
+.exercise-guide ol,.exercise-guide ul{padding-left:23px;margin:0}.exercise-guide li+li{margin-top:9px}.exercise-guide li{padding-left:4px}
+.guide-execution{border-left:3px solid var(--green);padding-left:16px}
+.guide-execution li::marker{color:var(--green);font-weight:650}
+.guide-disclosure{border-top:1px solid var(--line);padding:0 0 8px}
+.guide-disclosure summary{cursor:pointer;min-height:54px;display:flex;align-items:center;gap:9px;list-style:none;font-size:14px;font-weight:600}
+.guide-disclosure summary::-webkit-details-marker{display:none}.guide-disclosure summary:after{content:'+';font-size:22px;font-weight:400;color:var(--green);margin-left:auto;flex-shrink:0}
+.guide-disclosure[open]>summary:after{content:'−'}.guide-disclosure p{margin:0 0 10px}.guide-disclosure ul{margin-bottom:12px}
+.guide-disclosure.guide-adapt{border-bottom:1px solid var(--line)}
+.exercise-guide .guide-technical{font-size:12px;color:var(--muted);line-height:1.7}.guide-technical summary{font-size:12px}
+.guide-performance{padding-top:22px;margin-top:24px;border-top:1px solid var(--line)}
+.guide-performance .exercise-meta{margin:14px 0}.guide-performance .detail-progress p{font-size:12px}
+.exercise-guide .step-size{font-size:12px;justify-content:flex-end;border-top:1px solid var(--line);margin-top:18px;padding-top:8px}.exercise-guide .step-size select{font-size:16px}
+@media(max-width:420px){.exercise-meta{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.exercise-meta>div:first-child{grid-column:1/-1}.exercise-meta strong{font-size:21px}.exercise-meta small{font-size:11px}}
+@media(max-width:360px){.v2 .exercise-top{padding-left:12px;gap:8px}.v2 .exercise-top .exercise-number{width:25px;height:25px;font-size:10px}.v2 .exercise-top .exercise-name{font-size:15px}.v2 .exercise-body{padding-left:12px;padding-right:12px}.v2 .set-head,.v2 .set-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.v2 .set-row>.set-check{grid-column:1/-1;width:100%;height:44px;display:flex;gap:6px}.v2 .set-check>span{font-size:11px}.v2 .single-measure .set-row>.set-check{grid-column:auto;width:52px;height:52px;display:grid;gap:0}.training-title-row{gap:10px}.training-switch{max-width:115px}.v2 .training-title-row h1{font-size:30px}.v2 .training-weekline{font-size:11px}.modal-head{padding-left:18px;padding-right:18px}.modal-body{padding-left:18px;padding-right:18px}.modal-head h2{font-size:22px}.v2 .mobile-nav button{font-size:9px}}
+
+.guide-dosage>div+div{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}.guide-dosage-context{font-size:11px;color:var(--muted);margin-bottom:4px}
+[data-theme=dark] [data-muscle-group=other]{--muscle-ink:#cedaef;--muscle-bg:#334155}

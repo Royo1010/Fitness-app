@@ -1,7 +1,7 @@
 const SCOPE = new URL('./', self.location.href);
 const PREFIX = `ritme:${SCOPE.pathname}:`;
-const CACHE = PREFIX + 'v2.2-20261114-1';
-const ASSETS = ['./', './index.html', './styles.css', './training.css', './app.mjs', './core.mjs', './progress.mjs', './storage.mjs', './program.json', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './standing-calf.svg'];
+const CACHE = PREFIX + 'v2.2-design-20261114';
+const ASSETS = ['./', './index.html', './styles.css', './training.css', './app.mjs', './core.mjs', './progress.mjs', './storage.mjs', './program.json', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './exercise-guides.mjs'];
 const PATHS = new Set(ASSETS.map(asset => new URL(asset, SCOPE).pathname));
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(asset => new Request(new URL(asset, SCOPE), { cache: 'reload' })))).then(() => self.skipWaiting()));
