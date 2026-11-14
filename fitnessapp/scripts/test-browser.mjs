@@ -37,6 +37,27 @@ async function selectStoredTheme(p, theme) {
  } while(Date.now()<deadline);
  assert.fail(`Thema ${theme} niet volledig opgeslagen: ${JSON.stringify(stored)}`);
 }
+async function illustrationReady(p) {
+ const image=p.locator('.exercise-illustration img');
+ await image.waitFor({state:'visible'});
+ // Locator.evaluate awaits decode's Promise. A cached response still loads asynchronously.
+ await image.evaluate(img=>img.decode());
+ assert.ok(await image.evaluate(img=>img.complete&&img.naturalWidth>0));
+}
+async function checkDelayedIllustration(browser, base) {
+ const isolated=await browser.newContext({serviceWorkers:'block'});
+ let release,requested;
+ const gate=new Promise(resolve=>release=resolve),requestSeen=new Promise(resolve=>requested=resolve);
+ try {
+  await isolated.route('**/standing-calf.svg',async route=>{requested();await gate;await route.continue();});
+  const page=await isolated.newPage();
+  await page.setContent(`<figure class="exercise-illustration"><img src="${new URL('standing-calf.svg',base)}" width="520" height="265"></figure>`,{waitUntil:'domcontentloaded'});
+  await requestSeen;
+  assert.equal(await page.locator('img').evaluate(img=>img.complete),false);
+  const ready=illustrationReady(page);
+  release();await ready;
+ } finally { release?.();await isolated.close(); }
+}
 async function pageReady(p){await p.locator('h1').waitFor();}
 async function finish(p){for(const id of await p.locator('.exercise-card').evaluateAll(elements=>elements.map(e=>e.dataset.exerciseCard))){const checkbox=p.locator(`[data-exercise-card="${id}"] .set-check`);if(await checkbox.getAttribute('aria-pressed')==='false'){await checkbox.click();await settled(p);}}assert.ok(await p.locator('.checklist-complete').isVisible());await p.locator('[data-action="finish"]').click();await settled(p);}
 async function settings(p){await p.locator('.mobile-nav [data-page="more"]').click();await p.locator('.more-list [data-page="settings"]').click();}
@@ -112,7 +133,8 @@ try{
  await p.locator('[data-action="session-options"]').click();await p.locator('[data-action="delete-session"]').click();await p.locator('[data-action="confirm-delete-session"]').click();await settled(p);assert.equal((await state(p)).sessions.some(s=>s.id==='legacy-fixture'),false);
  await settings(p);await p.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(recovery.text)});await p.locator('[data-action="confirm-import"]').click();await settled(p);assert.equal((await state(p)).sessions.length,5);
  await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await p.reload();await pageReady(p);await settings(p);const offlineReport=await download(p,'export-analysis');assert.equal(JSON.parse(offlineReport.text).sessions.length,5);
- await p.locator('.mobile-nav [data-page="library"]').click();await p.locator('.library-item[data-exercise="standing_calf"]').click();assert.ok(await p.locator('.exercise-illustration img').evaluate(img=>img.complete&&img.naturalWidth>0));await p.locator('#modal [data-action="close-modal"]').first().click();
+ await p.locator('.mobile-nav [data-page="library"]').click();await p.locator('.library-item[data-exercise="standing_calf"]').click();await illustrationReady(p);assert.ok(await p.evaluate(async()=>{const response=await caches.match(new URL('./standing-calf.svg',location.href));return response?.ok&&(await response.text()).includes('<svg');}));await p.locator('#modal [data-action="close-modal"]').first().click();
  await p.locator('.mobile-nav [data-page="home"]').click();await p.screenshot({path:process.env.RITME_SCREENSHOT||'/tmp/ritme22-mobile.png',fullPage:true});await p.screenshot({path:'/tmp/ritme22-viewport.png'});assert.deepEqual(errors,[]);
+ await checkDelayedIllustration(context.browser(),url);
  console.log('Browser v2.2 geslaagd: snelle plus/min, dubbel-tap zonder zoom, checklist, herstart, vier trainingen/keuze, PR-scheiding, alle oefendetails, navigatie, thema, anker, downloads/import, opslagfout en offline export.');
 }finally{await context?.close();server?.kill();await rm(profile,{recursive:true,force:true});}
