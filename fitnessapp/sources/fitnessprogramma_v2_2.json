@@ -1,0 +1,602 @@
+{
+  "metadata": {
+    "title": "Vast fitnessprogramma v2.2 — tweeweekse Upper/Lower-cyclus",
+    "status": "Vastgesteld voor Codex-update op basis van gesprek; belastbaarheid en 60-minuten-eis in praktijk bewaken",
+    "timezone": "Europe/Amsterdam",
+    "weekly_cycle": "Maandag 00:00 t/m zondag 23:59:59 lokale tijd; vervolgens automatisch andere variant",
+    "default_workout_order": [
+      "upper_a",
+      "lower_a",
+      "upper_b",
+      "lower_b"
+    ],
+    "per_week_workouts": 4,
+    "no_fixed_weekdays": true,
+    "no_jiu_jitsu_in_app": true,
+    "max_session_minutes_target": 60,
+    "max_lower_exercises": 8,
+    "exercise_variations_per_2_weeks": 5,
+    "exercise_slots_per_week": 29,
+    "supersets_required": false,
+    "rehab_separate": true,
+    "logging_rule": "Bestaande log-UX en historische records behouden; keuzeoefeningen afzonderlijk loggen",
+    "exercise_details_rule": "Bestaande uitgebreide instructies behouden; nieuwe bent-over row voorzien van volledige instructies."
+  },
+  "cycle": {
+    "week_1": [
+      {
+        "id": "upper_a",
+        "name": "Upper A",
+        "focus": "Borst, rug, schouders en armen",
+        "exercises": [
+          {
+            "id": "flat_db_bench_press",
+            "name": "Flat dumbbell bench press",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "chest_supported_machine_row",
+            "name": "Chest-supported machine row",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "low_incline_db_press",
+            "name": "Low incline dumbbell press",
+            "sets": 2,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "neutral_grip_lat_pulldown",
+            "name": "Neutral-grip lat pulldown",
+            "sets": 2,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "scapular_push_up",
+            "name": "Scapular push-up",
+            "sets": 2,
+            "target": "12–15 herhalingen",
+            "rest_seconds": 60,
+            "effort_instruction": "Stop zodra de schouderbladcontrole verslechtert; ruim vóór falen"
+          },
+          {
+            "id": "cable_lateral_raise",
+            "name": "Cable lateral raise",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "db_biceps_curl",
+            "name": "Dumbbell biceps curl",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Links alleen binnen door fysiotherapeut goedgekeurde belastbaarheid; geen pijnpieken doorduwen."
+          },
+          {
+            "id": "rope_triceps_pushdown",
+            "name": "Rope triceps pushdown",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          }
+        ]
+      },
+      {
+        "id": "lower_a",
+        "name": "Lower A",
+        "focus": "Keuzeoefening, benen, core, onderarmen en schouderrotatie",
+        "exercises": [
+          {
+            "type": "choice",
+            "id": "lower_a_main_choice",
+            "label": "Kies één oefening (geen extra oefening)",
+            "options": [
+              {
+                "id": "conventional_deadlift",
+                "name": "Conventional barbell deadlift",
+                "sets": 2,
+                "target": "5–8 herhalingen",
+                "rest_seconds": 180,
+                "effort_instruction": "Ongeveer 2–3 technisch goede herhalingen overhouden",
+                "note": "Heupdominant; geen gemengde onder-/bovenhandse greep bij linkerarmklachten."
+              },
+              {
+                "id": "barbell_bent_over_row",
+                "name": "Barbell bent-over row",
+                "sets": 2,
+                "target": "8–12 herhalingen",
+                "rest_seconds": 120,
+                "effort_instruction": "Ongeveer 2–3 technisch goede herhalingen overhouden",
+                "note": "Horizontale trekoefening; geen fysiologisch gelijkwaardige vervanging voor deadlift."
+              }
+            ]
+          },
+          {
+            "id": "hack_squat",
+            "name": "Hack squat",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 150,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "seated_leg_curl",
+            "name": "Seated leg curl",
+            "sets": 3,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 90,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "standing_calf_raise",
+            "name": "Standing calf raise",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "pallof_press",
+            "name": "Pallof press",
+            "sets": 2,
+            "target": "10–12 per kant",
+            "rest_seconds": 60,
+            "effort_instruction": "Beweging gecontroleerd; circa 2–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "reverse_wrist_curl",
+            "name": "Reverse wrist curl",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 60,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Rustige opbouw bij golfersellebooggevoeligheid."
+          },
+          {
+            "id": "cable_external_rotation",
+            "name": "Cable external rotation",
+            "sets": 2,
+            "target": "12–15 per arm",
+            "rest_seconds": 60,
+            "effort_instruction": "Techniek leidend; ruim vóór falen stoppen",
+            "note": "Schouderrotatortraining is bewust van Upper B naar Lower A verplaatst."
+          }
+        ]
+      },
+      {
+        "id": "upper_b",
+        "name": "Upper B",
+        "focus": "Borst, rug, achterste/zijdelingse schouders, armen en hangen",
+        "exercises": [
+          {
+            "id": "low_incline_db_press",
+            "name": "Low incline dumbbell press",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "neutral_grip_lat_pulldown",
+            "name": "Neutral-grip lat pulldown",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "seated_cable_row",
+            "name": "Seated cable row",
+            "sets": 2,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "technogym_reverse_fly",
+            "name": "Technogym Reverse Fly met armkussens",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden",
+            "note": "Behoud specifieke machinevariant met armkussens."
+          },
+          {
+            "id": "cable_lateral_raise",
+            "name": "Cable lateral raise",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "db_hammer_curl",
+            "name": "Dumbbell hammer curl",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Rustig en beheerst; klachten bepalen of de oefening uitvoerbaar is."
+          },
+          {
+            "id": "dead_hang",
+            "name": "Dead hang",
+            "sets": 2,
+            "target": "15–30 seconden",
+            "rest_seconds": 90,
+            "effort_instruction": "Niet van toepassing: stoppen vóór gripverlies of pijn",
+            "note": "Volwaardige oefening, niet alleen warming-up; zo nodig ondersteund hangen."
+          }
+        ]
+      },
+      {
+        "id": "lower_b",
+        "name": "Lower B",
+        "focus": "Bilspieren, benen, functionele core en grip",
+        "exercises": [
+          {
+            "id": "barbell_hip_thrust",
+            "name": "Barbell hip thrust",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "leg_press",
+            "name": "Leg press",
+            "sets": 4,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 135,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden",
+            "note": "Verhoogd van 3 naar 4 sets."
+          },
+          {
+            "id": "lying_leg_curl",
+            "name": "Lying leg curl",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 90,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "seated_calf_raise",
+            "name": "Seated calf raise",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "hanging_knee_raise",
+            "name": "Hanging knee raise",
+            "sets": 2,
+            "target": "8–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Alternatief bij arm/schouderklachten: captain’s chair; bewaar eigen oefening-ID voor alternatief."
+          },
+          {
+            "id": "landmine_rotation",
+            "name": "Landmine rotation",
+            "sets": 2,
+            "target": "8–12 per kant",
+            "rest_seconds": 75,
+            "effort_instruction": "Controle vóór inspanning; circa 2–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "farmers_carry",
+            "name": "Farmers carry",
+            "sets": 2,
+            "target": "20–30 meter",
+            "rest_seconds": 90,
+            "effort_instruction": "Niet van toepassing: stoppen vóór gripfalen of pijn",
+            "note": "Gewicht per hand vastleggen waar relevant."
+          }
+        ]
+      }
+    ],
+    "week_2": [
+      {
+        "id": "upper_a2",
+        "name": "Upper A2",
+        "focus": "Borst, rug, schouders en armen",
+        "exercises": [
+          {
+            "id": "flat_db_bench_press",
+            "name": "Flat dumbbell bench press",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "chest_supported_db_row",
+            "name": "Chest-supported dumbbell row",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "low_incline_db_press",
+            "name": "Low incline dumbbell press",
+            "sets": 2,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "neutral_grip_lat_pulldown",
+            "name": "Neutral-grip lat pulldown",
+            "sets": 2,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "scapular_push_up",
+            "name": "Scapular push-up",
+            "sets": 2,
+            "target": "12–15 herhalingen",
+            "rest_seconds": 60,
+            "effort_instruction": "Stop zodra de schouderbladcontrole verslechtert; ruim vóór falen"
+          },
+          {
+            "id": "cable_lateral_raise",
+            "name": "Cable lateral raise",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "db_biceps_curl",
+            "name": "Dumbbell biceps curl",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Links alleen binnen door fysiotherapeut goedgekeurde belastbaarheid; geen pijnpieken doorduwen."
+          },
+          {
+            "id": "rope_triceps_pushdown",
+            "name": "Rope triceps pushdown",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          }
+        ]
+      },
+      {
+        "id": "lower_a2",
+        "name": "Lower A2",
+        "focus": "Keuzeoefening, benen, core, onderarmen en schouderrotatie",
+        "exercises": [
+          {
+            "type": "choice",
+            "id": "lower_a_main_choice",
+            "label": "Kies één oefening (geen extra oefening)",
+            "options": [
+              {
+                "id": "conventional_deadlift",
+                "name": "Conventional barbell deadlift",
+                "sets": 2,
+                "target": "5–8 herhalingen",
+                "rest_seconds": 180,
+                "effort_instruction": "Ongeveer 2–3 technisch goede herhalingen overhouden",
+                "note": "Heupdominant; geen gemengde onder-/bovenhandse greep bij linkerarmklachten."
+              },
+              {
+                "id": "barbell_bent_over_row",
+                "name": "Barbell bent-over row",
+                "sets": 2,
+                "target": "8–12 herhalingen",
+                "rest_seconds": 120,
+                "effort_instruction": "Ongeveer 2–3 technisch goede herhalingen overhouden",
+                "note": "Horizontale trekoefening; geen fysiologisch gelijkwaardige vervanging voor deadlift."
+              }
+            ]
+          },
+          {
+            "id": "hack_squat",
+            "name": "Hack squat",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 150,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "seated_leg_curl",
+            "name": "Seated leg curl",
+            "sets": 3,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 90,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "standing_calf_raise",
+            "name": "Standing calf raise",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "pallof_press",
+            "name": "Pallof press",
+            "sets": 2,
+            "target": "10–12 per kant",
+            "rest_seconds": 60,
+            "effort_instruction": "Beweging gecontroleerd; circa 2–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "wrist_curl",
+            "name": "Wrist curl",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 60,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Voorzichtig bij golfersellebooggevoeligheid."
+          },
+          {
+            "id": "side_lying_db_external_rotation",
+            "name": "Side-lying dumbbell external rotation",
+            "sets": 2,
+            "target": "12–15 per arm",
+            "rest_seconds": 60,
+            "effort_instruction": "Techniek leidend; ruim vóór falen stoppen"
+          }
+        ]
+      },
+      {
+        "id": "upper_b2",
+        "name": "Upper B2",
+        "focus": "Borst, rug, achterste/zijdelingse schouders, armen en hangen",
+        "exercises": [
+          {
+            "id": "low_incline_db_press",
+            "name": "Low incline dumbbell press",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "neutral_grip_lat_pulldown",
+            "name": "Neutral-grip lat pulldown",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "single_arm_cable_row",
+            "name": "Single-arm cable row",
+            "sets": 2,
+            "target": "8–12 per arm",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 2 goede herhalingen overhouden"
+          },
+          {
+            "id": "technogym_reverse_fly",
+            "name": "Technogym Reverse Fly met armkussens",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden",
+            "note": "Behoud specifieke machinevariant met armkussens."
+          },
+          {
+            "id": "cable_lateral_raise",
+            "name": "Cable lateral raise",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "db_hammer_curl",
+            "name": "Dumbbell hammer curl",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Rustig en beheerst; klachten bepalen of de oefening uitvoerbaar is."
+          },
+          {
+            "id": "dead_hang",
+            "name": "Dead hang",
+            "sets": 2,
+            "target": "15–30 seconden",
+            "rest_seconds": 90,
+            "effort_instruction": "Niet van toepassing: stoppen vóór gripverlies of pijn",
+            "note": "Volwaardige oefening, niet alleen warming-up; zo nodig ondersteund hangen."
+          }
+        ]
+      },
+      {
+        "id": "lower_b2",
+        "name": "Lower B2",
+        "focus": "Bilspieren, benen, functionele core en grip",
+        "exercises": [
+          {
+            "id": "barbell_hip_thrust",
+            "name": "Barbell hip thrust",
+            "sets": 3,
+            "target": "8–12 herhalingen",
+            "rest_seconds": 120,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "leg_press",
+            "name": "Leg press",
+            "sets": 4,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 135,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden",
+            "note": "Verhoogd van 3 naar 4 sets."
+          },
+          {
+            "id": "lying_leg_curl",
+            "name": "Lying leg curl",
+            "sets": 2,
+            "target": "10–15 herhalingen",
+            "rest_seconds": 90,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "seated_calf_raise",
+            "name": "Seated calf raise",
+            "sets": 2,
+            "target": "12–20 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 1–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "hanging_knee_raise",
+            "name": "Hanging knee raise",
+            "sets": 2,
+            "target": "8–15 herhalingen",
+            "rest_seconds": 75,
+            "effort_instruction": "Ongeveer 2–3 goede herhalingen overhouden",
+            "note": "Alternatief bij arm/schouderklachten: captain’s chair; bewaar eigen oefening-ID voor alternatief."
+          },
+          {
+            "id": "cable_woodchop",
+            "name": "Cable woodchop",
+            "sets": 2,
+            "target": "8–12 per kant",
+            "rest_seconds": 75,
+            "effort_instruction": "Controle vóór inspanning; circa 2–3 goede herhalingen overhouden"
+          },
+          {
+            "id": "farmers_carry",
+            "name": "Farmers carry",
+            "sets": 2,
+            "target": "20–30 meter",
+            "rest_seconds": 90,
+            "effort_instruction": "Niet van toepassing: stoppen vóór gripfalen of pijn",
+            "note": "Gewicht per hand vastleggen waar relevant."
+          }
+        ]
+      }
+    ]
+  }
+}

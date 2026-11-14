@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createSession,createBestSession,exerciseDone,orderedExercises,nextExerciseIndex,recordBest,validSet,exerciseStats,measurement,bestSetIndex,emptyState,validateState,makeBackup,readBackup,mergeBackup,suggestedSet,trainingWeek,trainingSelection} from '../dist/core.mjs';
-const program=JSON.parse(readFileSync(new URL('../dist/program.json',import.meta.url)));
+const program=JSON.parse(readFileSync(new URL('./fixtures/program-v2.1.json',import.meta.url)));
 const create=()=>createBestSession(program,'lower_a',1,'2026-11-30');
 const record=(entry,values)=>{Object.assign(entry.sets[0],values);recordBest(entry);};
 

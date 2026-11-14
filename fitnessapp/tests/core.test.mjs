@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { isDate, localDate, addDays, mondayOf, weekFor, parseNumber, measurement, emptyState, newSet, createSession, validSet, setError, exerciseStats, weekProgress, weeklyCounts, makeBackup, readBackup, mergeBackup, validateState } from '../dist/core.mjs';
-const program = JSON.parse(readFileSync(new URL('../dist/program.json', import.meta.url)));
+const program = JSON.parse(readFileSync(new URL('./fixtures/program-v2.1.json', import.meta.url)));
 function training(date = '2026-11-09', day = 'upper_a', variant = 1) { return createSession(program, day, variant, date); }
 function log(s, id, weights, values = []) {
   const e = s.exercises.find(e => e.exerciseId === id);
@@ -73,7 +73,7 @@ test('alle acht trainingen komen exact uit de bron, in juiste volgorde', () => {
   }
   assert.equal(Object.keys(program.exercises).length, 35);
 });
-test('26 van de 32 plaatsen blijven gelijk en zes wisselen', () => {
+test('historische v2.1-fixture: 26 van 32 plaatsen blijven gelijk en zes wisselen', () => {
   let changed = 0;
   for (const day of Object.keys(program.days)) program.week_programs[1][day].forEach((p, i) => { if (p.exercise_id !== program.week_programs[2][day][i].exercise_id) changed++; });
   assert.equal(changed, 6);

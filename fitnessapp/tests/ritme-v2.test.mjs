@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { PROGRAM_START, DAYS, isoWeek, trainingWeek, trainingTitle, trainingSelection, canRegister, recordedBefore, suggestedSet, adjustNumber, createSession, newSet, emptyState, validateState, makeBackup, readBackup, mergeBackup, exerciseStats, addDays } from '../dist/core.mjs';
-const program = JSON.parse(readFileSync(new URL('../dist/program.json', import.meta.url)));
+const program = JSON.parse(readFileSync(new URL('./fixtures/program-v2.1.json', import.meta.url)));
 const on = date => trainingWeek(date);
 function done(day, date = PROGRAM_START) { const s = createSession(program, day, on(date).variant, date); s.status = 'completed'; s.completedAt = s.updatedAt; return s; }
 
-test('2.0 vaste volgorde is Lower–Upper–Lower–Upper, met expliciete suffixen', () => {
-  assert.deepEqual(DAYS, ['lower_a', 'upper_a', 'lower_b', 'upper_b']);
-  assert.deepEqual(DAYS.map(d => trainingTitle(d, 1)), ['Lower A1', 'Upper A1', 'Lower B1', 'Upper B1']);
-  assert.deepEqual(DAYS.map(d => trainingTitle(d, 2)), ['Lower A2', 'Upper A2', 'Lower B2', 'Upper B2']);
+test('2.2 volgorde is Upper A–Lower A–Upper B–Lower B', () => {
+  assert.deepEqual(DAYS, ['upper_a', 'lower_a', 'upper_b', 'lower_b']);
+  assert.deepEqual(DAYS.map(d => trainingTitle(d, 1)), ['Upper A', 'Lower A', 'Upper B', 'Lower B']);
+  assert.deepEqual(DAYS.map(d => trainingTitle(d, 2)), ['Upper A2', 'Lower A2', 'Upper B2', 'Lower B2']);
 });
 test('30 november 2026 is ISO-week 49 en trainingsweek 1', () => {
   assert.equal(PROGRAM_START, '2026-11-30');
@@ -29,16 +29,11 @@ test('ISO-weekjaar rond nieuwjaar en schrikkeldagen', () => {
   assert.deepEqual(isoWeek('2028-02-29'), { number:9,year:2028 });
   assert.deepEqual(isoWeek('2029-12-31'), { number:1,year:2030 });
 });
-test('voor de referentiestart alleen een voorbeeld zonder officiële progressie', () => {
-  const w = on('2026-11-11'); assert.equal(w.official,false); assert.equal(w.variant,1); assert.equal(w.trainingNumber,null);
-  assert.equal(canRegister('2026-11-11','2026-12-01'),false);
-  assert.equal(trainingSelection([done('lower_a','2026-11-09')],w,'2026-11-11').completed,0);
-});
-test('nieuwe registratie is alleen vanaf de referentie tot en met de echte datum toegestaan', () => {
-  assert.equal(canRegister('2026-11-30','2026-11-30'),true);
-  assert.equal(canRegister('2026-12-01','2026-11-30'),false);
-  assert.equal(canRegister('2026-11-29','2026-11-30'),false);
-  assert.equal(canRegister('2026-99-99','2026-11-30'),false);
+test('bestaand referentieanker blijft staan maar registratie vóór de referentie werkt', () => {
+  const w = on('2026-11-11'); assert.equal(w.official,true); assert.equal(w.variant,2); assert.equal(w.anchor,PROGRAM_START);
+  assert.equal(canRegister('2026-11-11','2026-11-14'),true);
+  assert.equal(canRegister('2026-11-15','2026-11-14'),false);
+  assert.equal(canRegister('2026-99-99','2026-11-14'),false);
 });
 test('eerstvolgende selectie schuift automatisch en eindigt na de vierde', () => {
   const sessions = [], week = on(PROGRAM_START);
@@ -52,17 +47,17 @@ test('afwijkende uitvoervolgorde blijft mogelijk en selecteert eerste open train
   assert.equal(trainingSelection(sessions,on(PROGRAM_START),PROGRAM_START).completed,2);
 });
 test('pauzeren is geen voltooiing en heropenen herstelt de selectie', () => {
-  const s = done('lower_a'); s.status='paused'; s.completedAt=null;
-  assert.equal(trainingSelection([s],on(PROGRAM_START),PROGRAM_START).next,'lower_a');
-  s.status='completed';s.completedAt=s.updatedAt;
+  const s = done('upper_a'); s.status='paused'; s.completedAt=null;
   assert.equal(trainingSelection([s],on(PROGRAM_START),PROGRAM_START).next,'upper_a');
-  s.status='active';s.completedAt=null;
+  s.status='completed';s.completedAt=s.updatedAt;
   assert.equal(trainingSelection([s],on(PROGRAM_START),PROGRAM_START).next,'lower_a');
+  s.status='active';s.completedAt=null;
+  assert.equal(trainingSelection([s],on(PROGRAM_START),PROGRAM_START).next,'upper_a');
 });
 test('gemiste trainingen worden niet meegenomen, voltooid of verwijderd bij een nieuwe week', () => {
   const sessions = [done('lower_a')], before=JSON.stringify(sessions);
   const next=trainingSelection(sessions,on('2026-12-07'),'2026-12-07');
-  assert.equal(next.completed,0);assert.equal(next.next,'lower_a');assert.equal(on('2026-12-07').variant,2);assert.equal(JSON.stringify(sessions),before);
+  assert.equal(next.completed,0);assert.equal(next.next,'upper_a');assert.equal(on('2026-12-07').variant,2);assert.equal(JSON.stringify(sessions),before);
 });
 test('een volledig afgeronde week begint nooit vroegtijdig aan het volgende weektype', () => {
   const sessions=DAYS.map(d=>done(d));
@@ -131,7 +126,7 @@ test('gemiddelde herhalingen gebruikt uitsluitend geldige afgeronde werksets', (
   e.sets=[8,10,12].map(reps=>({...newSet(),kg:20,reps,completed:true}));
   e.sets[2].kind='warmup';assert.equal(exerciseStats([s],'flat_db_press').averageReps,9);
 });
-test('trainingsbron en opslagcontract zijn identiek aan de oorspronkelijke bestanden', () => {
+test('historische v2.1-programmafixture en opslagcontract blijven intact', () => {
   assert.equal(program.metadata.version,'1.0');assert.equal(Object.keys(program.exercises).length,35);
   const storage=readFileSync(new URL('../dist/storage.mjs',import.meta.url),'utf8');
   assert.match(storage,/indexedDB.open\('ritme-fitness', 1\)/);assert.match(storage,/get\('state'\)/);
@@ -152,7 +147,7 @@ test('serviceworker pre-cachet alle assets onder het subpad en raakt IndexedDB n
   const cache={addAll:async r=>{requests=r;}};
   const context={URL,Request,Set,caches:{open:async()=>cache},self:{location:{href:'https://example.github.io/Fitness-app/sw.js'},addEventListener:(type,fn)=>events[type]=fn,skipWaiting:async()=>{}}};
   vm.runInNewContext(source,context);let pending;events.install({waitUntil:p=>pending=p});await pending;
-  assert.ok(requests.length===13);assert.ok(requests.every(r=>new URL(r.url).pathname.startsWith('/Fitness-app/')));
+  assert.ok(requests.length===14);assert.ok(requests.every(r=>new URL(r.url).pathname.startsWith('/Fitness-app/')));
   assert.ok(requests.some(r=>r.url.endsWith('/training.css')));assert.doesNotMatch(source,/indexedDB|deleteDatabase/);
 });
 test('serviceworker bedient geen andere GitHub Pages-app op dezelfde host', () => {

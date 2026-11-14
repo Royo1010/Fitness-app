@@ -1,0 +1,976 @@
+{
+  "metadata": {
+    "title": "Vast vierdaags Upper/Lower fitnessprogramma",
+    "version": "1.0",
+    "date": "2026-11-11",
+    "goal": "Hypertrofie gehele lichaam; sterke/gezonde schouders, grip/onderarmen, functionele core",
+    "weekly_sessions": 4,
+    "session_limit_minutes": 60,
+    "cycle_weeks": 2,
+    "week_switch": "conceptueel wekelijks, maandag start volgende variant",
+    "target_80_20": "6 van 32 oefenplaatsen wisselen in week 2 (= 18,75%); 81,25% gelijk",
+    "rest_definition": "Rust na elke werkset; bij eenzijdige oefening eerst beide zijden afmaken en dan rust.",
+    "workset_definition": "Werksets zijn exclusief lichte opwarmsets; voor cardio, opwarm- en mobiliteitswerk gelden eigen tijdsdoelen.",
+    "reserves_target": "Grote oefeningen meestal 2 herhalingen over; isolatie meestal 1–3; techniek-/rotator-cuff en revalidatie voldoende ruime marge.",
+    "safety": "Bij linkerarmpijn pieken tot 7/10: biceps curls/hammer curls, hangen en zware gripoefeningen alleen na beoordeling/afstemming fysiotherapeut en volgens klachtenreactie."
+  },
+  "days": {
+    "upper_a": "Upper A",
+    "lower_a": "Lower A",
+    "upper_b": "Upper B",
+    "lower_b": "Lower B"
+  },
+  "week_programs": {
+    "1": {
+      "upper_a": [
+        {
+          "exercise_id": "flat_db_press",
+          "name": "Flat dumbbell bench press",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "chest_supported_row",
+          "name": "Chest-supported row (machine)",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "low_incline_db_press",
+          "name": "Low incline dumbbell press",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pulldown_neutral",
+          "name": "Neutral-grip lat pulldown",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "lateral_raise",
+          "name": "Cable lateral raise",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "ext_rotation_cable",
+          "name": "Cable external rotation",
+          "sets": 2,
+          "reps": "12–15 per arm",
+          "rest": "45–60 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "db_curl",
+          "name": "Dumbbell biceps curl (supinerende/onderhandse greep)",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pushdown",
+          "name": "Rope triceps pushdown",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ],
+      "lower_a": [
+        {
+          "exercise_id": "hack_squat",
+          "name": "Hack squat",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "seated_leg_curl",
+          "name": "Seated leg curl",
+          "sets": 3,
+          "reps": "10–15",
+          "rest": "90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "leg_press",
+          "name": "Leg press",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "back_extension",
+          "name": "45° back extension (heupdominant)",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "standing_calf",
+          "name": "Standing calf raise",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pallof",
+          "name": "Pallof press",
+          "sets": 2,
+          "reps": "10–12 per kant",
+          "rest": "60 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "farmers_carry",
+          "name": "Farmer’s carry",
+          "sets": 2,
+          "reps": "20–30 meter",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "reverse_wrist_curl",
+          "name": "Reverse wrist curl",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ],
+      "upper_b": [
+        {
+          "exercise_id": "low_incline_db_press",
+          "name": "Low incline dumbbell press",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pulldown_neutral",
+          "name": "Neutral-grip lat pulldown",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "seated_row",
+          "name": "Seated cable row (neutrale greep)",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "flat_db_press",
+          "name": "Flat dumbbell bench press",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "technogym_reverse_fly",
+          "name": "Technogym Reverse Fly (met armkussens)",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "lateral_raise",
+          "name": "Cable lateral raise",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "hammer_curl",
+          "name": "Dumbbell hammer curl",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pushdown",
+          "name": "Rope triceps pushdown",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ],
+      "lower_b": [
+        {
+          "exercise_id": "hip_thrust",
+          "name": "Barbell hip thrust",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "leg_press",
+          "name": "Leg press",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "bulgarian",
+          "name": "Supported Bulgarian split squat",
+          "sets": 2,
+          "reps": "8–12 per been",
+          "rest": "90–120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "lying_leg_curl",
+          "name": "Lying leg curl",
+          "sets": 3,
+          "reps": "10–15",
+          "rest": "90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "seated_calf",
+          "name": "Seated calf raise",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "hanging_knee",
+          "name": "Hanging knee raise",
+          "sets": 2,
+          "reps": "8–15",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "landmine_rotation",
+          "name": "Landmine rotation",
+          "sets": 2,
+          "reps": "8–12 per kant",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "wrist_curl",
+          "name": "Wrist curl",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ]
+    },
+    "2": {
+      "upper_a": [
+        {
+          "exercise_id": "flat_db_press",
+          "name": "Flat dumbbell bench press",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "chest_supported_db_row",
+          "name": "Chest-supported dumbbell row (week 2)",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": true,
+          "base_id": "chest_supported_row"
+        },
+        {
+          "exercise_id": "low_incline_db_press",
+          "name": "Low incline dumbbell press",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pulldown_neutral",
+          "name": "Neutral-grip lat pulldown",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "lateral_raise",
+          "name": "Cable lateral raise",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "side_lying_ext_rotation",
+          "name": "Side-lying dumbbell external rotation (week 2)",
+          "sets": 2,
+          "reps": "12–15 per arm",
+          "rest": "45–60 s",
+          "is_variation": true,
+          "base_id": "ext_rotation_cable"
+        },
+        {
+          "exercise_id": "db_curl",
+          "name": "Dumbbell biceps curl (supinerende/onderhandse greep)",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pushdown",
+          "name": "Rope triceps pushdown",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ],
+      "lower_a": [
+        {
+          "exercise_id": "hack_squat",
+          "name": "Hack squat",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "seated_leg_curl",
+          "name": "Seated leg curl",
+          "sets": 3,
+          "reps": "10–15",
+          "rest": "90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "leg_extension",
+          "name": "Leg extension (week 2 Lower A)",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "120 s",
+          "is_variation": true,
+          "base_id": "leg_press"
+        },
+        {
+          "exercise_id": "back_extension",
+          "name": "45° back extension (heupdominant)",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "standing_calf",
+          "name": "Standing calf raise",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pallof",
+          "name": "Pallof press",
+          "sets": 2,
+          "reps": "10–12 per kant",
+          "rest": "60 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "farmers_carry",
+          "name": "Farmer’s carry",
+          "sets": 2,
+          "reps": "20–30 meter",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "reverse_wrist_curl",
+          "name": "Reverse wrist curl",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ],
+      "upper_b": [
+        {
+          "exercise_id": "low_incline_db_press",
+          "name": "Low incline dumbbell press",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pulldown_neutral",
+          "name": "Neutral-grip lat pulldown",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "one_arm_row",
+          "name": "Single-arm cable row (week 2 Upper B)",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": true,
+          "base_id": "seated_row"
+        },
+        {
+          "exercise_id": "flat_db_press",
+          "name": "Flat dumbbell bench press",
+          "sets": 2,
+          "reps": "8–12",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "technogym_reverse_fly",
+          "name": "Technogym Reverse Fly (met armkussens)",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "lateral_raise",
+          "name": "Cable lateral raise",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "hammer_curl",
+          "name": "Dumbbell hammer curl",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "pushdown",
+          "name": "Rope triceps pushdown",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "75–90 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ],
+      "lower_b": [
+        {
+          "exercise_id": "hip_thrust",
+          "name": "Barbell hip thrust",
+          "sets": 3,
+          "reps": "8–12",
+          "rest": "120–180 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "leg_press",
+          "name": "Leg press",
+          "sets": 2,
+          "reps": "10–15",
+          "rest": "120 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "reverse_lunge",
+          "name": "Supported reverse lunge (week 2 Lower B)",
+          "sets": 2,
+          "reps": "8–12 per been",
+          "rest": "90–120 s",
+          "is_variation": true,
+          "base_id": "bulgarian"
+        },
+        {
+          "exercise_id": "lying_leg_curl",
+          "name": "Lying leg curl",
+          "sets": 3,
+          "reps": "10–15",
+          "rest": "90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "seated_calf",
+          "name": "Seated calf raise",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "hanging_knee",
+          "name": "Hanging knee raise",
+          "sets": 2,
+          "reps": "8–15",
+          "rest": "60–90 s",
+          "is_variation": false,
+          "base_id": null
+        },
+        {
+          "exercise_id": "cable_woodchop",
+          "name": "Cable woodchop (week 2 Lower B)",
+          "sets": 2,
+          "reps": "8–12 per kant",
+          "rest": "60–90 s",
+          "is_variation": true,
+          "base_id": "landmine_rotation"
+        },
+        {
+          "exercise_id": "wrist_curl",
+          "name": "Wrist curl",
+          "sets": 2,
+          "reps": "12–20",
+          "rest": "60 s",
+          "is_variation": false,
+          "base_id": null
+        }
+      ]
+    }
+  },
+  "exercises": {
+    "scapular_pushup": {
+      "name": "Scapular push-up",
+      "muscles": "Serratus anterior; schouderbladcontrole",
+      "setup": "Handen onder of iets breder dan de schouders, armen gestrekt, vingers gespreid; voeten op heupbreedte of knieën op de grond. Maak van hoofd tot bekken een lange lijn.",
+      "movement": "Houd ellebogen gestrekt. Laat de borst een beetje tussen de schouders zakken door de schouderbladen naar elkaar te bewegen. Duw daarna de vloer weg zodat de schouderbladen om de ribbenkast naar voren bewegen.",
+      "cues": "Span buik en billen licht aan. Adem rustig door. Kleine, zuivere beweging vanuit de schouderbladen.",
+      "avoid": "Niet doorzakken in de onderrug, niet hoofd uitsteken en geen normale push-up maken door ellebogen te buigen.",
+      "adjust": "Op knieën of tegen een muur uitvoeren als een plank te zwaar is; stoppen bij schouderpijn."
+    },
+    "assisted_hang": {
+      "name": "Ondersteunde hang (optionele warming-up)",
+      "muscles": "Schoudercomfort; lichte gripbelasting",
+      "setup": "Pak een vaste stang op schouderbreedte vast en houd beide voeten op een box of op de grond, zodat je zelf kunt bepalen hoeveel lichaamsgewicht aan de armen hangt.",
+      "movement": "Zak slechts een beetje in de armen terwijl je een deel van je gewicht met de benen draagt; blijf rustig ademen en stap weer volledig op de voeten om te stoppen.",
+      "cues": "Houd nek ontspannen en vermijd agressief trekken aan schouders; polsen ongeveer recht.",
+      "avoid": "Niet direct met volledig lichaamsgewicht gaan hangen of van de stang springen.",
+      "adjust": "Niet uitvoeren als biceps of binnenzijde elleboog opspeelt. Dit is optioneel, geen verplichte rek."
+    },
+    "flat_db_press": {
+      "name": "Flat dumbbell bench press",
+      "muscles": "Borst, voorste schouder, triceps",
+      "setup": "Ga op een vlakke bank liggen; voeten stevig op de vloer, knieën ongeveer boven enkels. Billen en bovenrug op de bank. Dumbbells boven de borst, polsen recht boven ellebogen.",
+      "movement": "Laat de dumbbells gecontroleerd zakken richting zijkant van de borst, met bovenarmen schuin ten opzichte van de romp (grofweg 30–60°). Duw omhoog in een natuurlijke lichte boog; houd aan de top spanning zonder de dumbbells tegen elkaar te slaan.",
+      "cues": "Voeten drukken in vloer; buik licht aangespannen, schouderbladen comfortabel stabiel op bank; adem in tijdens zakken en uit bij duwen. Neutrale/semi-neutrale greep mag als dat fijner is.",
+      "avoid": "Geen extreem wijd uitstaande ellebogen, geknikte polsen, stuiterende gewichten of pijnlijke overdiepe beweging.",
+      "adjust": "Verkort de bewegingsuitslag of kies lichtere dumbbells wanneer voorkant schouder gevoelig is."
+    },
+    "low_incline_db_press": {
+      "name": "Low incline dumbbell press",
+      "muscles": "Bovenste deel borst, voorste schouder, triceps",
+      "setup": "Zet bank op lage helling, ongeveer 15–30°. Voeten plat en stabiel, hoofd en rug gesteund. Plaats dumbbells boven bovenborst met polsen neutraal.",
+      "movement": "Zak in een comfortabele diagonale baan tot ellebogen net onder borsthoogte of eerder wanneer schouder onprettig voelt; duw omhoog zonder schouders richting oren te trekken.",
+      "cues": "Lichte rompstijfheid, druk via voeten. Ellebogen niet haaks uitzetten, meestal iets voor de schouders. Adem in omlaag, uit omhoog.",
+      "avoid": "Te steile bank waardoor oefening een schouderpress wordt; hard onderin uitrekken of onderrug extreem hol trekken.",
+      "adjust": "Verminder bankhoek of gebruik semi-neutrale greep bij klachten."
+    },
+    "chest_supported_row": {
+      "name": "Chest-supported row (machine)",
+      "muscles": "Middenrug, brede rugspier, achterste schouder; indirect biceps",
+      "setup": "Stel stoel/bank zo af dat je borst volledig steun heeft en de handgrepen goed bereikbaar zijn zonder ver naar voren te strekken. Voeten stabiel. Bij voorkeur neutrale greep.",
+      "movement": "Trek ellebogen gecontroleerd naar achteren en enigszins richting heupen, met de handgrepen naar de zijribben. Laat armen weer gecontroleerd naar voren komen zonder borst van steun te halen.",
+      "cues": "Polsen recht, nek lang, schouders niet optrekken. Laat schouderbladen natuurlijk meebewegen; focus op trekken met ellebogen in plaats van de handen samen te knijpen.",
+      "avoid": "Romp achterover gooien, schouders opkrullen of hard aan de grepen knijpen.",
+      "adjust": "Bij bicep-/elleboogpijn: lichter, eventueel straps of een alternatief in overleg met fysiotherapeut."
+    },
+    "pulldown_neutral": {
+      "name": "Neutral-grip lat pulldown",
+      "muscles": "Brede rugspier, bovenrug; indirect biceps",
+      "setup": "Stel het dijbeensteun-kussen stevig af. Zit rechtop met voeten op de grond en grijp een parallelle/neutrale handgreep op comfortabele breedte.",
+      "movement": "Trek eerst zacht de schouders omlaag; breng daarna de ellebogen omlaag richting zijkant van ribbenkast en trek de handgreep richting bovenborst. Laat rustig terug omhoog met gecontroleerde schouderbladbeweging.",
+      "cues": "Romp nagenoeg verticaal of heel licht achterover, ribben boven bekken, polsen recht. Adem uit tijdens trekken.",
+      "avoid": "Niet achter de nek trekken, niet zwaaien met romp of de nek naar voren duwen.",
+      "adjust": "Bij armklachten lager gewicht; je kunt greep of bewegingsuitslag aanpassen. Stop bij duidelijke toename van pijn."
+    },
+    "lateral_raise": {
+      "name": "Cable lateral raise",
+      "muscles": "Zijdelingse schouders",
+      "setup": "Zet kabel laag; sta rechtop, voeten op heupbreedte. Houd de kabelhandgreep naast/voor je lichaam met licht gebogen elleboog en rechte pols; steun eventueel met vrije hand.",
+      "movement": "Til de arm zijwaarts en iets naar voren in het vlak van het schouderblad tot ongeveer schouderhoogte of de pijnvrije grens. Laat langzaam zakken.",
+      "cues": "Schouders laag/ontspannen; elleboog leidt, hand volgt. Buik licht aangespannen, geen zwaai.",
+      "avoid": "Niet met hele romp afzetten, schouders naar oren trekken of dwangmatig hoger dan schouderhoogte heffen.",
+      "adjust": "Kies licht gewicht en pijnvrije hoogte. Indien nodig machine-lateral raise als alternatief."
+    },
+    "ext_rotation_cable": {
+      "name": "Cable external rotation",
+      "muscles": "Rotator cuff (vooral buitenrotatoren)",
+      "setup": "Kabel op ellebooghoogte, zeer licht gewicht. Sta zijwaarts; elleboog ongeveer 90° gebogen en langs zij. Eventueel klein handdoekrolletje tussen elleboog en romp.",
+      "movement": "Houd elleboog bij lichaam en draai de onderarm naar buiten, alsof de hand een deur opent. Keer rustig terug.",
+      "cues": "Pols recht, schouder laag, romp stil, geen compensatie met pols. Bewegingsuitslag blijft comfortabel.",
+      "avoid": "Niet schouder achteruit trekken of hele romp meedraaien; geen zwaar gewicht gebruiken.",
+      "adjust": "Bij pijn of gebrek aan controle: nog lichter of isometrische variant volgens behandelaar."
+    },
+    "db_curl": {
+      "name": "Dumbbell biceps curl (supinerende/onderhandse greep)",
+      "muscles": "Biceps en andere elleboogbuigers",
+      "setup": "Sta rechtop met voeten op heupbreedte, knieën los. Begin met armen naast je romp en handpalmen naar voren of draai tijdens optillen rustig naar buiten; polsen recht.",
+      "movement": "Buig de ellebogen om dumbbells naar schouderhoogte te brengen zonder ellebogen naar voren te zwaaien. Laat 2–3 seconden gecontroleerd zakken.",
+      "cues": "Bovenarmen blijven grotendeels naast romp; ribben boven bekken, billen/buik licht aangespannen. Adem uit omhoog.",
+      "avoid": "Niet achterover leunen, ellebogen snel naar voren gooien, polsen knikken of door pijn heen tillen.",
+      "adjust": "Voor linkerarm alleen volgens belasting die fysiotherapeut goedkeurt. Bij aanhoudende pijn of pieken richting 7/10 deze reguliere curls uitstellen."
+    },
+    "pushdown": {
+      "name": "Rope triceps pushdown",
+      "muscles": "Triceps",
+      "setup": "Ga vlak voor een hoge kabel staan. Voeten op heupbreedte, knieën licht gebogen. Pak touw met neutrale polsen; ellebogen dicht langs ribben.",
+      "movement": "Strek de ellebogen omlaag totdat armen bijna recht zijn; touwuiteinden mogen iets uit elkaar. Kom beheerst terug totdat de ellebogen comfortabel gebogen zijn.",
+      "cues": "Bovenarmen blijven ongeveer stil. Buik licht aangespannen, schouders weg van oren; polsen recht.",
+      "avoid": "Niet met bovenlichaam op kabel hangen, polsen naar beneden knikken of ellebogen naar voren laten schieten.",
+      "adjust": "Gebruik lichtere belasting bij golferselleboog of verander greep indien nodig."
+    },
+    "chest_supported_db_row": {
+      "name": "Chest-supported dumbbell row (week 2)",
+      "muscles": "Rug, achterste schouder; indirect biceps",
+      "setup": "Stel verstelbare bank op ongeveer 30–45°. Ga met borst tegen bank liggen, voeten stevig op de grond. Laat dumbbells recht onder schouders hangen, neutrale greep.",
+      "movement": "Trek ellebogen richting heupen, houd borst tegen bank en laat langzaam terugzakken.",
+      "cues": "Houd polsen neutraal en nek in lijn met romp; beweeg uit schouder en elleboog, niet vanuit een zwaai.",
+      "avoid": "Niet bovenlichaam losmaken van bank of schouders hoog trekken.",
+      "adjust": "Bij bicepklachten liever machine-row met lichtere handgreep of terug naar week-1-variant."
+    },
+    "side_lying_ext_rotation": {
+      "name": "Side-lying dumbbell external rotation (week 2)",
+      "muscles": "Rotator cuff",
+      "setup": "Ga op je zij liggen met trainingsarm boven. Elleboog ongeveer 90° gebogen tegen romp, eventueel handdoek tussen bovenarm en ribben. Start met onderarm over buik, zeer lichte dumbbell.",
+      "movement": "Draai onderarm omhoog rondom vaste elleboog; keer langzaam terug.",
+      "cues": "Pols blijft recht, bekken/romp blijven stil. Kleine beheerste bewegingsuitslag.",
+      "avoid": "Niet met hele romp draaien of schoudertop omhoog trekken.",
+      "adjust": "Kies minieme belasting; alternatieve cable external rotation bij klachten."
+    },
+    "hack_squat": {
+      "name": "Hack squat",
+      "muscles": "Quadriceps; ook bilspieren",
+      "setup": "Rug en bekken tegen kussen; schouders onder steunen; voeten ongeveer schouderbreed en iets voor je heupen, tenen licht naar buiten. Vind stand waarin knieën voeten volgen.",
+      "movement": "Buig heupen en knieën om gecontroleerd te zakken zolang hielen blijven staan en de rug tegen steun blijft. Duw via hele voet omhoog, zonder knieën hard te vergrendelen.",
+      "cues": "Span buik aan alsof iemand zacht tegen je buik duwt; houd knie in lijn met tweede/derde teen. Adem in en maak romp stevig vóór zakken, uit tijdens zwaarste deel omhoog.",
+      "avoid": "Hielen los, knieën naar binnen, bekken los van steun of dieper gaan dan controle toelaat.",
+      "adjust": "Gebruik kleinere pijnvrije diepte en lichter gewicht; alternatief leg press."
+    },
+    "seated_leg_curl": {
+      "name": "Seated leg curl",
+      "muscles": "Hamstrings (knieflexie)",
+      "setup": "Stel rugleuning zo dat knie-as ongeveer met machine-as uitlijnt. Dijbeensteun stevig maar comfortabel over bovenbenen; onderbeenpad net boven hiel/achilles, niet op kuitbuik.",
+      "movement": "Buig knieën en beweeg onderbenen omlaag/achterover volgens machinebaan. Keer langzaam terug tot comfortabele bijna-gestrekte knieën.",
+      "cues": "Bekken en bovenbenen blijven op hun plek; houd handgrepen ontspannen vast en romp stil.",
+      "avoid": "Niet met heupen van stoel komen, bewegen met momentum of knieën forceren.",
+      "adjust": "Stel de machine opnieuw af bij kniepijn of drukplekken."
+    },
+    "leg_press": {
+      "name": "Leg press",
+      "muscles": "Quadriceps, bilspieren",
+      "setup": "Zit met volledige rug en bekken tegen rugleuning. Zet voeten ongeveer schouderbreed op plateau, tenen licht naar buiten; voeten zo plaatsen dat knieën comfortabel kunnen buigen.",
+      "movement": "Laat slee gecontroleerd zakken tot kniebuiging past bij je heupmobiliteit zonder dat onderrug/staartbeen loskomt. Duw via hele voet weg.",
+      "cues": "Kniesporen volgen tenen; houd bekken tegen zitting, buik gecontroleerd aangespannen en hielen op plaat.",
+      "avoid": "Te diep waardoor bekken opkrult, knieën naar binnen laten vallen, knieën hard op slot zetten.",
+      "adjust": "Beperk diepte of verander voetpositie bij heup-/knieklachten."
+    },
+    "back_extension": {
+      "name": "45° back extension (heupdominant)",
+      "muscles": "Bilspieren, hamstrings en rugstrekkers",
+      "setup": "Stel heuppad net onder bekkenkam zodat heupen vrij kunnen buigen. Voeten stevig op platform, knieën licht gebogen, handen gekruist voor borst.",
+      "movement": "Scharnier vanuit heupen voorover met relatief neutrale rug. Span billen aan en strek heupen tot hoofd, rug en benen ongeveer één lijn vormen.",
+      "cues": "Buik licht aangespannen; denk aan billen naar achteren en daarna heupen naar pad drukken. Houd nek neutraal.",
+      "avoid": "Niet hoog achterover hyperextenderen of alleen uit onderrug omhoog zwaaien.",
+      "adjust": "Begin zonder gewicht; bij rugklachten kleinere bewegingsuitslag."
+    },
+    "standing_calf": {
+      "name": "Standing calf raise",
+      "muscles": "Kuit, nadruk gastrocnemius",
+      "setup": "Sta met voorvoeten op steun en hielen vrij, knieën bijna recht maar niet op slot, heupen onder romp. Voeten ongeveer heupbreed en evenwijdig.",
+      "movement": "Laat hielen gecontroleerd zakken tot comfortabele rek. Duw vervolgens op bal van grote teen en tweede teen omhoog. Pauzeer kort bovenin.",
+      "cues": "Romphouding stabiel, enkel beweegt recht vooruit; gewicht verdeeld over voorvoet.",
+      "avoid": "Niet veren, enkels naar buiten laten kantelen of met knieën pompen.",
+      "adjust": "Verminder diepte bij achilles-/enkelklachten."
+    },
+    "pallof": {
+      "name": "Pallof press",
+      "muscles": "Core: antirotatie",
+      "setup": "Kabel op borsthoogte; sta zijwaarts met voeten iets breder dan heupen en knieën zacht. Pak handgreep met beide handen voor borst, ribben boven bekken.",
+      "movement": "Duw handen recht vooruit zonder dat romp naar kabel draait. Houd 1–2 seconden vast, trek terug naar borst. Beide zijden trainen.",
+      "cues": "Span buik en billen aan, blijf rustig ademen en houd bekken recht vooruit.",
+      "avoid": "Niet compenseren door heupen te draaien, schouders op te trekken of onderrug hol te trekken.",
+      "adjust": "Lichter gewicht/kleinere armlengte bij schouder- of elleboogpijn."
+    },
+    "farmers_carry": {
+      "name": "Farmer’s carry",
+      "muscles": "Grip, onderarmen, trapezius, romp",
+      "setup": "Pak twee dumbbells van een verhoging of vanaf vloer met heupscharnier. Sta lang, voeten ongeveer heupbreed, knieën zacht, armen langs lichaam.",
+      "movement": "Loop kleine gecontroleerde passen met dumbbells langs het lichaam. Houd romp recht en keer rustig; zet gewichten met heupscharnier neer.",
+      "cues": "Polsen neutraal, schouders ontspannen maar stabiel, buik rondom licht aangespannen, adem door.",
+      "avoid": "Niet scheef hangen, gewichten laten schommelen, hals optrekken of grip tot falen forceren.",
+      "adjust": "Met huidige linkerarmklachten alleen als pijnvrij/goed verdragen; anders overslaan, belasting verlagen of vervangen door hands-free core-oefening."
+    },
+    "reverse_wrist_curl": {
+      "name": "Reverse wrist curl",
+      "muscles": "Polsstrekkers onderarm",
+      "setup": "Ga zitten, onderarmen rusten op dijen/bank met handpalmen omlaag en polsen net over rand. Houd licht gewicht losjes maar gecontroleerd vast.",
+      "movement": "Beweeg alleen polsen omhoog (handrug richting onderarm) en laat langzaam zakken.",
+      "cues": "Onderarmen blijven gesteund, polsen bewegen recht, vingers niet overdreven vastknijpen.",
+      "avoid": "Niet met ellebogen of schouders meebewegen, niet zwaar starten of pijn uitlokken.",
+      "adjust": "Bij golferselleboog of bicepsbelasting overleg over geschikte startbelasting."
+    },
+    "leg_extension": {
+      "name": "Leg extension (week 2 Lower A)",
+      "muscles": "Quadriceps",
+      "setup": "Zit met rug tegen steun; pas kniegewricht bij draaipunt aan, onderbeenpad net boven enkel. Handen losjes op handgrepen.",
+      "movement": "Strek knieën gecontroleerd richting bijna recht, zonder pijnlijke lock-out; zak langzaam terug naar comfortabele buiging.",
+      "cues": "Bovenbenen blijven op zitvlak, beweeg zonder zwaaien, houd voeten ontspannen.",
+      "avoid": "Niet heupen optillen, schoppen met momentum of over pijn heen strekken.",
+      "adjust": "Verminder belasting of bewegingsuitslag bij kniepijn."
+    },
+    "seated_row": {
+      "name": "Seated cable row (neutrale greep)",
+      "muscles": "Middenrug, brede rugspier; indirect biceps",
+      "setup": "Zit met voeten op steun, knieën licht gebogen, rug recht en borst rustig op. Pak neutrale handgreep op comfortabele breedte.",
+      "movement": "Trek handgreep richting onderste ribben/bovenbuik; ellebogen bewegen langs romp. Laat armen gecontroleerd naar voren zonder onderrug bol te trekken.",
+      "cues": "Polsen recht, ribben boven bekken, schouderbladen mogen natuurlijk naar voren/achter bewegen.",
+      "avoid": "Niet heen-en-weer roeien met romp of sterk achterover trekken.",
+      "adjust": "Bij armklachten lichter, grepen aanpassen of ondersteunde row gebruiken."
+    },
+    "technogym_reverse_fly": {
+      "name": "Technogym Reverse Fly (met armkussens)",
+      "muscles": "Achterste schouders; bovenrug als ondersteuners",
+      "setup": "Stel zitje zo af dat schouders ongeveer ter hoogte van de draaipunten/armkussens komen en borst tegen de voorste steun kan rusten (indien aanwezig). Plaats bovenarmen/onderarmen volgens de kussens en neem slechts lichte greep op handgrepen.",
+      "movement": "Open de armen horizontaal naar buiten/achter tot comfortabele hoek, met een zachte elleboogbuiging die ongeveer gelijk blijft. Keer langzaam terug zonder gewichten hard te laten botsen.",
+      "cues": "Houd borst en bekken stabiel, nek lang, polsen neutraal en schouders laag. Denk aan armen wijd openen, niet aan schouderbladen hard samenknijpen.",
+      "avoid": "Niet schouders optrekken, bovenlichaam wegduwen van zitting of overdreven ver achter het lichaam trekken.",
+      "adjust": "Omdat dit toestel afwijkt van gewone pec deck: volg de pictogrammen voor exacte elleboog-/padpositie; bij pijn afstelling of bereik aanpassen."
+    },
+    "hammer_curl": {
+      "name": "Dumbbell hammer curl",
+      "muscles": "Brachialis, brachioradialis en biceps",
+      "setup": "Sta rechtop, voeten heupbreed, knieën los. Houd dumbbells langs romp met duimen naar voren / handpalmen naar elkaar en polsen recht.",
+      "movement": "Buig ellebogen zonder polsen te draaien; breng gewichten naar schouders en laat ongeveer 2–3 seconden zakken.",
+      "cues": "Elleboog blijft ongeveer naast romp; houd buik/billen rustig aangespannen en schouders laag.",
+      "avoid": "Niet zwaaien vanuit schouders/onderrug, handen proneren of polsen naar binnen knikken.",
+      "adjust": "Dit prikkelde je linkerarm eerder. Alleen geleidelijk introduceren in overleg met fysiotherapeut; bij duidelijk toenemende pijn stoppen."
+    },
+    "dead_hang": {
+      "name": "Dead hang (einde Upper B)",
+      "muscles": "Grip en belastbaarheid in hangpositie",
+      "setup": "Pak vaste stang op ongeveer schouderbreedte, begin met voeten op box/grond zodat je controle houdt over hoeveel gewicht aan armen hangt.",
+      "movement": "Breng alleen bij goede tolerantie meer lichaamsgewicht op de armen en houd 15–30 seconden comfortabel vast. Stap met voeten terug op ondersteuning om te stoppen.",
+      "cues": "Adem door; nek ontspannen, schouders mogen natuurlijk bewegen. Recht of comfortabel polspositie.",
+      "avoid": "Niet forceren tot maximale tijd, niet plotseling loslaten/springen, niet proberen pijnlijke schouderpositie op te rekken.",
+      "adjust": "Met bicep-/elleboogklachten eerst ondersteund hangen. Bij pijn overslaan; geen bewijs dat volledig hangen de blessure behandelt."
+    },
+    "one_arm_row": {
+      "name": "Single-arm cable row (week 2 Upper B)",
+      "muscles": "Rugspieren, schouderbladcontrole; indirect biceps",
+      "setup": "Sta of zit stabiel tegenover kabel; houd handgreep met een arm, romp recht en schouders gelijk. Andere hand kan steun nemen.",
+      "movement": "Trek elleboog naar zijribben; laat arm gecontroleerd naar voren gaan. Train beide kanten apart.",
+      "cues": "Bekken en borst blijven naar voren, pols recht. Vermijd meedraaien; adem uit bij trekken.",
+      "avoid": "Niet met romp torderen of gewicht met een ruk verplaatsen.",
+      "adjust": "Bij linkerarmklachten overschakelen naar tweearmige ondersteunde row met lichter gewicht."
+    },
+    "hip_thrust": {
+      "name": "Barbell hip thrust",
+      "muscles": "Bilspieren (heupextensie)",
+      "setup": "Plaats bovenrug op een stabiele bank ter hoogte van onderste schouderbladen; zachte barbellpad over heupplooi. Voeten ongeveer heup-/schouderbreed en zodanig dat schenen bovenin ongeveer verticaal zijn.",
+      "movement": "Laat heupen gecontroleerd zakken en duw via hele voeten de heupen omhoog tot heupen en romp vrijwel één lijn vormen. Houd kort vast en zak weer.",
+      "cues": "Kijk schuin naar voren, ribben boven bekken, span buik en billen; houd lichte bekkenachterkanteling bovenin om overmatige holling te beperken.",
+      "avoid": "Niet hyperextenderen in de onderrug, voeten te ver weg zetten of nek achterover gooien.",
+      "adjust": "Begin met kleine gewichten en pas voetafstand aan voor prettige bilspierbelasting."
+    },
+    "bulgarian": {
+      "name": "Supported Bulgarian split squat",
+      "muscles": "Quadriceps en bilspieren; eenbenige stabiliteit",
+      "setup": "Zet achterste wreef op lage bank, voorste voet voldoende ver naar voren zodat hiel op grond blijft. Neem met een hand steun aan rek, sta heupbreed en niet in één smalle lijn.",
+      "movement": "Buig voorste knie en heup om recht omlaag te zakken; duw via hele voorvoet omhoog. Achterste been ondersteunt vooral balans.",
+      "cues": "Bovenlichaam licht voorover mag, bekken blijft recht en voorste knie volgt tenen. Span buik aan.",
+      "avoid": "Niet wiebelen, voorste hiel optillen of vanuit achterste voet hard afzetten.",
+      "adjust": "Begin lichaamsgewicht; verlaag bankhoogte of kies ondersteunde split squat zonder achtervoet op bank."
+    },
+    "lying_leg_curl": {
+      "name": "Lying leg curl",
+      "muscles": "Hamstrings",
+      "setup": "Ga buiklig op machine liggen, heupen stevig tegen kussen. Stel draaipunt bij knieën en rol net boven hielen.",
+      "movement": "Buig knieën om onderbenen richting billen te brengen zonder heupen op te tillen. Laat langzaam terugzakken.",
+      "cues": "Houd buik licht aangespannen, bekken laag en nek ontspannen.",
+      "avoid": "Niet heupen van bank drukken of onderrug hol trekken om zwaarder te trainen.",
+      "adjust": "Verlaag gewicht bij knie-/hamstringklachten."
+    },
+    "seated_calf": {
+      "name": "Seated calf raise",
+      "muscles": "Kuiten, nadruk soleus",
+      "setup": "Zit met knieën ongeveer 90°, dijbeenkussens over bovenbenen. Voorvoeten op platform, hielen vrij; zit rechtop.",
+      "movement": "Laat hielen gecontroleerd zakken en druk dan op voorvoet omhoog. Houd kort bovenin.",
+      "cues": "Knieën bewegen nauwelijks, enkels volgen tenen en romp blijft stil.",
+      "avoid": "Niet veren of in de tenen knijpen alsof je voeten wilt krullen.",
+      "adjust": "Minder bewegingsuitslag bij achilles-/voetklachten."
+    },
+    "hanging_knee": {
+      "name": "Hanging knee raise",
+      "muscles": "Buikspieren, heupbuigers; grip/schouders",
+      "setup": "Pak vaste stang; begin indien nodig met captain’s chair of elleboogsteun. Houd benen rustig en schouderpositie comfortabel.",
+      "movement": "Trek knieën richting borst en kantel bekken licht achterover (schaambeen richting navel); zak benen langzaam zonder zwaai.",
+      "cues": "Adem uit bij optrekken, buik aangespannen, beweging gecontroleerd.",
+      "avoid": "Niet kippend zwaaien, alleen knieën van heupbuigers optillen zonder bekkenbeweging, of door pijn blijven hangen.",
+      "adjust": "Bij linkerarm- of schouderklachten kies captain’s chair of reverse crunch op mat."
+    },
+    "landmine_rotation": {
+      "name": "Landmine rotation",
+      "muscles": "Core: rotatiecontrole; schouders/armen als stabilisatoren",
+      "setup": "Plaats één uiteinde van halter veilig in landminehouder. Sta met voeten iets breder dan heupen, knieën licht gebogen, houd het andere uiteinde met twee handen vóór borst op comfortabele hoogte.",
+      "movement": "Beweeg halter in een kleine boog van midden naar één zijde en terug; draai heupen/borst gecontroleerd mee waar nodig, met voeten die op tenen mogen meedraaien. Werk beide kanten af.",
+      "cues": "Span buik aan zodat beweging gecontroleerd blijft; polsen neutraal, schouders laag, knieën volgen tenen. Begin met alleen lege stang indien prettig.",
+      "avoid": "Geen grote, snelle draai met gefixeerde voeten/knieën en geen rukken aan pijnlijke schouder of elleboog.",
+      "adjust": "Bij armklachten vervangen door Pallof press; kleine rotatieboog is voldoende."
+    },
+    "wrist_curl": {
+      "name": "Wrist curl",
+      "muscles": "Polsbuigers aan binnenzijde onderarm",
+      "setup": "Zit met onderarmen gesteund op dijen/bank, handpalmen omhoog en polsen net voorbij rand. Pak zeer licht gewicht.",
+      "movement": "Laat hand langzaam iets naar beneden komen, buig pols omhoog en laat gecontroleerd terugzakken.",
+      "cues": "Beweeg alleen pols, onderarm blijft stil, vingers ontspannen maar met veilige grip.",
+      "avoid": "Niet zwaar gaan omdat onderarm sterk aanvoelt; geen stuiteren aan onderste positie.",
+      "adjust": "Bij golferselleboog alleen pijnmatig goed verdragen en liefst afgestemd met fysiotherapeut."
+    },
+    "reverse_lunge": {
+      "name": "Supported reverse lunge (week 2 Lower B)",
+      "muscles": "Quadriceps, bilspieren, balans",
+      "setup": "Sta rechtop naast rek voor lichte handsteun, voeten heupbreed, handen vrij of lichte dumbbells indien arm dat toelaat.",
+      "movement": "Stap één voet rustig naar achteren en zak in beide knieën; druk via voorste voet terug naar begin. Wissel benen of train per kant.",
+      "cues": "Voorste knie volgt tenen, voorste hiel blijft staan, bekken blijft naar voren. Buik licht aangespannen.",
+      "avoid": "Niet te smal stappen, niet met achterste been afzetten of voorste knie naar binnen laten vallen.",
+      "adjust": "Begin met lichaamsgewicht en handsteun; keer terug naar split squat bij balansproblemen."
+    },
+    "cable_woodchop": {
+      "name": "Cable woodchop (week 2 Lower B)",
+      "muscles": "Core: gecontroleerde rotatie",
+      "setup": "Kabel ongeveer op borst-/schouderhoogte, sta schuin ten opzichte van kabel met voeten iets breder dan heupen. Grijp handgreep met beide handen en houd armen licht gebogen.",
+      "movement": "Breng handen in een gecontroleerde diagonale baan over de romp. Draai heupen/borst zoveel mee dat knieën comfortabel volgen; keer rustig terug. Beide kanten trainen.",
+      "cues": "Blijf lang, buik actief en polsen recht; draai vanuit hele romp, niet geïsoleerd met de armen.",
+      "avoid": "Niet met gefixeerde knieën hard ronddraaien of met zware kabel schouders forceren.",
+      "adjust": "Kies Pallof press bij schouder-, biceps- of elleboogpijn."
+    }
+  },
+  "warmup": {
+    "upper": "3–6 min lichte beweging + 1 × 10–12 scapular push-ups + 1–2 opwarmsets eerste druk- en trekoefening. Optioneel 10–15 sec ondersteunde hang alléén als pijnvrij.",
+    "lower": "3–5 min rustig bewegen + 1–3 lichte opwarmsets van eerste beenoefening; mobiliseer enkels/heupen indien nodig."
+  },
+  "finisher": {
+    "upper_b": "1–2 × 15–30 s dead hang, bij voorkeur na laatste oefening; alleen met goed verdragen arm/elleboog. Start ondersteund."
+  },
+  "progression": {
+    "main": "Double progression: houd gewicht gelijk totdat je alle sets op bovengrens van herhalingen uitvoert met goede techniek en nog circa 2 nette herhalingen over; dan kleinste praktische gewichtsstap.",
+    "variation": "Houd gewichten/herhalingen voor week 1 en week 2 varianten afzonderlijk bij.",
+    "pain": "Stop bij scherpe, duidelijke toenemende pijn of forse piek; controleer reactie later en de dag erna; verlaag/verwissel oefening bij aanhoudende verslechtering."
+  },
+  "physio": {
+    "current": "Linkerarm gemiddeld 3–4/10, rust 2/10, pieken 7/10. Fysiotherapeut adviseert 4–5 keer per week zware excentrische elleboogbuigoefening, maximaal zes herhalingen.",
+    "boundary": "Geen eigen sets, frequentie of gewichten toekennen; exacte voorschrift fysiotherapeut gaat voor en belasting overlapt met overige trek-/gripoefeningen."
+  },
+  "sources": [
+    {
+      "title": "ACSM Position Stand 2026",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/"
+    },
+    {
+      "title": "Review oefenvariatie 2022",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35438660/"
+    },
+    {
+      "title": "Richtlijn rotator cuff 2025",
+      "url": "https://doi.org/10.2519/jospt.2025.13182"
+    },
+    {
+      "title": "Mass General Brigham epicondylalgie revalidatie",
+      "url": "https://www.massgeneral.org/assets/MGH/pdf/orthopaedics/sports-medicine/physical-therapy/rehabilitation-protocol-for-medial-lateral-epicondylitis.pdf"
+    },
+    {
+      "title": "AAOS golfer’s elbow",
+      "url": "https://www.orthoinfo.org/diseases--conditions/golfers-elbow-medial-epicondylitis/"
+    }
+  ]
+}
