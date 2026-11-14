@@ -47,3 +47,9 @@ De GitHub Actions-workflow controleert pull requests met unit-, browser- en offl
 ## Praktische sessieduur
 
 60 minuten blijft een streefgrens, geen gegarandeerde uitkomst. Vier trainingen bevatten samen 67 voorgeschreven werksets. Opwarmsets, eenzijdige uitvoering, toestelwissels en wachttijd komen daar in tijd nog bij. De vastgestelde aantallen en rusttijden zijn niet verkort om een tijdsdoel te claimen.
+
+## App-updates en compacte bediening
+
+Onder Meer → Instellingen → App-updates staan de geïnstalleerde versie en het automatisch gemaakte buildnummer. Controleer op updates vergelijkt die build met de online publicatie; Update installeren bewaart openstaande invoer voordat de nieuwe serviceworker wordt geactiveerd en de app herlaadt. Bij geen internet, een onvolledige publicatie of een opslagfout verschijnt een melding en blijven gegevens bewaard. Gebruik geen browsergegevens wissen om de app bij te werken.
+
+Training en Schema tonen minder dubbele tekst; statussen op Schema volgen echte activiteit. Volledige wijzigingen, reproductie en de resterende iPhone-controle: [TESTVERSLAG-UX-UPDATES.md](TESTVERSLAG-UX-UPDATES.md).

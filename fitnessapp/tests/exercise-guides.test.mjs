@@ -30,11 +30,15 @@ test('spiergroepen en materiaal maken curl, extension en schouderoefeningen herk
   assert.match(guides.technogym_reverse_fly.equipment, /armkussens/);
 });
 
-test('alleen week- en varianttoevoegingen verdwijnen uit de weergegeven namen', () => {
+test('overbodige toevoegingen verdwijnen alleen uit weergavenamen; greep blijft herkenbaar', () => {
   for (const name of ['Dumbbell row (week 2)', 'Dumbbell row (week 2 Lower A)', 'Dumbbell row (variant 1)', 'Dumbbell row (Week 1)']) {
     assert.equal(displayName(name), 'Dumbbell row');
   }
-  assert.equal(displayName('Technogym Reverse Fly (met armkussens)'), 'Technogym Reverse Fly (met armkussens)');
+  assert.equal(displayName('Technogym Reverse Fly (met armkussens)'), 'Technogym Reverse Fly');
+  assert.equal(displayName('Dumbbell biceps curl (supinerende/onderhandse greep)'), 'Dumbbell biceps curl');
+  assert.equal(displayName('45° back extension (heupdominant)'), '45° back extension');
+  assert.equal(displayName('Chest-supported row (machine)'), 'Chest-supported row (machine)');
+  assert.equal(displayName('Dead hang (einde Upper B)'), 'Dead hang');
   assert.equal(displayName('Seated row (neutrale greep)'), 'Seated row (neutrale greep)');
 });
 

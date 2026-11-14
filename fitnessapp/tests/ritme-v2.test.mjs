@@ -147,7 +147,9 @@ test('serviceworker pre-cachet alle assets onder het subpad en raakt IndexedDB n
   const cache={addAll:async r=>{requests=r;}};
   const context={URL,Request,Set,caches:{open:async()=>cache},self:{location:{href:'https://example.github.io/Fitness-app/sw.js'},addEventListener:(type,fn)=>events[type]=fn,skipWaiting:async()=>{}}};
   vm.runInNewContext(source,context);let pending;events.install({waitUntil:p=>pending=p});await pending;
-  assert.ok(requests.length===14);assert.ok(requests.every(r=>new URL(r.url).pathname.startsWith('/Fitness-app/')));
+  const required=['index.html','app.mjs','core.mjs','storage.mjs','progress.mjs','exercise-guides.mjs','updates.mjs','build-info.mjs','program.json','styles.css','training.css','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
+  for(const file of required)assert.ok(requests.some(r=>r.url.endsWith('/'+file)),file+' offline beschikbaar');
+  assert.ok(requests.every(r=>new URL(r.url).pathname.startsWith('/Fitness-app/')));
   assert.ok(requests.some(r=>r.url.endsWith('/training.css')));assert.doesNotMatch(source,/indexedDB|deleteDatabase/);
 });
 test('serviceworker bedient geen andere GitHub Pages-app op dezelfde host', () => {

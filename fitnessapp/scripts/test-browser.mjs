@@ -5,6 +5,7 @@ import path from 'node:path';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createServer} from 'node:net';
+import {testUpdates} from './test-updates.mjs';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const profile=await mkdtemp(path.join(tmpdir(),'ritme22-browser-'));
 const legacyProgram=JSON.parse(await readFile(new URL('../tests/fixtures/program-v2.1.json',import.meta.url)));
@@ -56,6 +57,9 @@ async function checkContrast(p) {
 }
 async function checkCards(p) {
  const cards=p.locator('.exercise-card');
+ assert.equal(await p.locator('.exercise-state,.weight-convention,.training-progress-row,[data-training-status]').count(),0);
+ for(const text of await cards.locator('.set-check').allTextContents())assert.equal(text.trim(),'');
+ assert.doesNotMatch(await p.locator('.training-weekline').textContent(),/weektype|Staat klaar/i);
  assert.equal(await cards.locator('.muscle-badge').count(),await cards.count());
  for(const text of await cards.locator('.muscle-badge').allTextContents())assert.ok(text.trim().length>3);
  for(const text of await cards.locator('.exercise-name').allTextContents())assert.doesNotMatch(text,/\((?:week|variant)\s*\d/i);
@@ -78,7 +82,22 @@ try{
  await checkCards(p);await checkContrast(p);
  assert.equal(await card(p,'flat_db_press').locator('.set-check').isEnabled(),true); // Werkt ook vóór 30 november.
  for(const width of [320,390,430,1024]){await p.setViewportSize({width,height:844});await checkCards(p);}
- await p.setViewportSize({width:390,height:844});await p.screenshot({path:'/tmp/ritme-design-training.png'});
+ await p.setViewportSize({width:390,height:844});await p.screenshot({path:'/tmp/ritme-ux-training.png'});
+ assert.equal(await p.locator('.training-exercise-count').textContent(),'8 oefeningen');
+ await p.locator('.mobile-nav [data-page="schema"]').click();
+ assert.equal(await p.locator('.topbar').count(),0);assert.doesNotMatch(await p.locator('#main').textContent(),/weektype|Vier trainingen\. Jij kiest wanneer/i);
+ assert.match(await p.locator('.schema-week-picker h2').textContent(),/Week 46 · 9–15 november 2026/);
+ assert.equal(await p.locator('[data-session-status="not-started"]').count(),4);
+ await p.locator('.schema-row[data-day="upper_b"]').click();await p.locator('.back').click();
+ assert.equal(await p.locator('[data-session-status="not-started"]').count(),4);assert.equal((await state(p)).sessions.length,0);
+ for(const width of [320,390]){await p.setViewportSize({width,height:844});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+ await p.setViewportSize({width:390,height:844});await p.screenshot({path:'/tmp/ritme-ux-schema.png'});
+ await p.locator('.mobile-nav [data-page="home"]').click();
+ const pauseBox=await p.locator('.finish-bar .pause-training').boundingBox(),finishBox=await p.locator('.finish-bar [data-action="finish"]').boundingBox();
+ assert.ok(Math.abs(pauseBox.y+pauseBox.height/2-finishBox.y-finishBox.height/2)<1);
+ await p.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));
+ assert.ok((await p.locator('.finish-bar').boundingBox()).y+ (await p.locator('.finish-bar').boundingBox()).height <= (await p.locator('.mobile-nav').boundingBox()).y);
+ await p.screenshot({path:'/tmp/ritme-ux-afronden.png'});await p.evaluate(()=>scrollTo(0,0));
  const flat=card(p,'flat_db_press');await flat.locator('[data-set-field="kg"]').fill('20');await flat.locator('[data-set-field="reps"]').fill('10');
  const plus=flat.locator('[data-field="kg"][data-direction="1"]'),minus=flat.locator('[data-field="kg"][data-direction="-1"]');
  await plus.evaluate(el=>window.testStepButton=el);assert.equal(await plus.evaluate(el=>getComputedStyle(el).touchAction),'manipulation');
@@ -169,5 +188,6 @@ try{
  assert.ok(await p.evaluate(async()=>Boolean((await caches.match(new URL('./exercise-guides.mjs',location.href)))?.ok)));
  await p.locator('#modal [data-action="close-modal"]').first().click();
  await p.locator('.mobile-nav [data-page="home"]').click();await p.screenshot({path:process.env.RITME_SCREENSHOT||'/tmp/ritme22-mobile.png',fullPage:true});await p.screenshot({path:'/tmp/ritme22-viewport.png'});assert.deepEqual(errors,[]);
+ await testUpdates(context.browser());
  console.log('Browser v2.2 geslaagd: snelle plus/min, dubbel-tap zonder zoom, checklist, herstart, vier trainingen/keuze, PR-scheiding, 37 tekstgidsen zonder oefenbeelden, spiergroeplabels, 320–1024px, AA-kleurcontrasten licht/donker, navigatie, thema, anker, downloads/import, opslagfout en offline export.');
 }finally{await context?.close();server?.kill();await rm(profile,{recursive:true,force:true});}

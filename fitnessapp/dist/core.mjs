@@ -45,12 +45,20 @@ export function trainingTitle(day, variant) {
   return ({ lower_a: 'Lower A', upper_a: 'Upper A', lower_b: 'Lower B', upper_b: 'Upper B' })[day] + (variant === 1 ? '' : variant);
 }
 export function recordedBefore(sessions, asOf = localDate()) { return sessions.filter(s => s.date <= asOf); }
+// Viewing/choosing a schema can leave an empty saved session. It is not activity.
+export function sessionStatus(session) {
+  if (session?.status === 'completed') return 'completed';
+  if (!session) return 'not-started';
+  const active = session.startedExplicitly === true || session.status === 'paused' || session.note?.trim() || allSessionEntries(session).some(e => e.skippedReason || choiceHasData(e) || e.sets.some(st => st.skipped));
+  return active ? 'active' : 'not-started';
+}
 export function trainingSelection(sessions, week = trainingWeek(), asOf = localDate()) {
   const eligible = sessions.filter(s => week.official && s.date <= asOf && s.weekMonday === week.monday && s.variant === week.variant);
   const rows = DAYS.map(day => {
     const matches = eligible.filter(s => s.day === day).sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
     const completed = matches.some(s => s.status === 'completed');
-    const current = matches.filter(s => s.status !== 'completed').at(-1) || matches.at(-1) || null;
+    const incomplete = matches.filter(s => s.status !== 'completed');
+    const current = incomplete.filter(s => sessionStatus(s) === 'active').at(-1) || incomplete.at(-1) || matches.at(-1) || null;
     return { day, title: trainingTitle(day, week.variant), completed, session: current };
   });
   return { rows, completed: rows.filter(r => r.completed).length, next: rows.find(r => !r.completed)?.day ?? null };

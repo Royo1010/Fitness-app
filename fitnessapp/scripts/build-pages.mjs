@@ -23,9 +23,13 @@ export async function buildPages(source, output, revision = null) {
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   await cp(source, output, { recursive: true });
-  await writeFile(path.join(output, 'sw.js'), worker.replace(cacheLine, `const CACHE = PREFIX + 'build-${contentHash}';`));
+  const release = { version: JSON.parse(await readFile(new URL('../package.json', import.meta.url))).version, commit: revision, contentHash };
+  const buildLine = /^const BUILD = .+;$/m;
+  if (!buildLine.test(worker)) throw new Error('Serviceworker mist build-identiteit');
+  await writeFile(path.join(output, 'sw.js'), worker.replace(cacheLine, `const CACHE = PREFIX + 'build-${contentHash}';`).replace(buildLine, `const BUILD = ${JSON.stringify({ ...release, commit: null })};`));
+  await writeFile(path.join(output, 'build-info.mjs'), `export const BUILD = ${JSON.stringify(release)};\n`);
   await writeFile(path.join(output, '.nojekyll'), '');
-  await writeFile(path.join(output, 'release.json'), JSON.stringify({ version: JSON.parse(await readFile(new URL('../package.json', import.meta.url))).version, commit: revision, contentHash }, null, 2) + '\n');
+  await writeFile(path.join(output, 'release.json'), JSON.stringify(release, null, 2) + '\n');
   return contentHash;
 }
 

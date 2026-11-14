@@ -1,5 +1,5 @@
 // Presentation only: IDs, prescriptions and historical instruction snapshots stay intact.
-export const displayName = name => String(name ?? '').replace(/\s*\((?:week|variant)\s*\d+[^)]*\)/gi, '').trim();
+export const displayName = name => String(name ?? '').replace(/\s*\((?:week|variant)\s*\d+[^)]*\)|\s*\((?:met armkussens|einde Upper B|optionele warming-up|heupdominant|supinerende\/onderhandse greep)\)/gi, '').trim();
 const guide = (group, muscle, about, equipment, steps, mistakes) => ({ group, muscle, about, equipment, steps, mistakes });
 export const guides = {
   scapular_pushup: guide('shoulders', 'Schouderbladspieren (serratus)',
