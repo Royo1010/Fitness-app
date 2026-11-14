@@ -28,13 +28,15 @@ test('Pages-build is herhaalbaar, cache verandert bij gewijzigde bron, opslag bl
       assert.deepEqual(await readFile(path.join(output, file)), await readFile(path.join(source, file)));
     }
     assert.deepEqual(JSON.parse(await readFile(path.join(output, 'release.json'))), { version: '2.2.0', commit: 'commit-three', contentHash: second });
+    const buildModule = await import(new URL('file://' + path.join(output, 'build-info.mjs')));
+    assert.deepEqual(buildModule.BUILD, JSON.parse(await readFile(path.join(output, 'release.json'))));
     assert.equal(await readFile(path.join(output, '.nojekyll'), 'utf8'), '');
     // Voer de gegenereerde worker uit: alle offline-assets bestaan onder het Pages-subpad.
     const events = {}; let requests, pending;
     vm.runInNewContext(worker, { URL, Request, Set, self: {
       location: { href: 'https://royo1010.github.io/Fitness-app/sw.js' },
       addEventListener: (type, fn) => events[type] = fn, skipWaiting: async () => {}
-    }, caches: { open: async () => ({ addAll: async value => requests = value }) } });
+    }, caches: { open: async () => ({ addAll: async value => requests = value, match: async () => new Response(await readFile(path.join(output, 'build-info.mjs'))) }) } });
     events.install({ waitUntil: promise => pending = promise }); await pending;
     assert.ok(requests.length >= 12);
     for (const request of requests) {
