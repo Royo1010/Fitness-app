@@ -57,3 +57,15 @@ Dit is mobiele Chromium-emulatie, geen fysieke iPhone/Safari-test. `touch-action
 Git-fetch en Git-push zijn bereikbaar. De GitHub API is in de cloudnetwerkpolicy geblokkeerd. Daardoor is een nieuwe live Pages-publicatie niet bevestigd en kan PR-aanmaak via de API geblokkeerd blijven. Sta voor API-toegang `api.github.com` toe in de cloudnetwerkinstellingen en sla op; controleer daarna de benodigde GitHub API-rechten. Als alternatief kan de gebruiker de gepushte branch via GitHub als PR openen en samenvoegen. De bestaande workflow publiceert vervolgens na geslaagde tests.
 
 Behoud https://royo1010.github.io/Fitness-app/ en wis geen sitegegevens. Open na een geslaagde deploy de bestaande PWA online en kies zo nodig App bijwerken. `release.json` hoort versie 2.2.0 en de gepubliceerde commit te tonen.
+
+## Reparatie van de CI-themarace
+
+De GitHub-browsertest las vóór de export nog revisie 54 met het donkere thema, terwijl de zojuist gekozen lichte modus nog werd opgeslagen. De export wachtte terecht op het opslaan; de vergelijking erna las revisie 55 met het lichte thema. De export wijzigde de trainingsgegevens niet.
+
+De test sluit na iedere themawisseling de focus op het keuzemenu af, wacht op de werkelijk opgeslagen themavoorkeur én op een lege opslagwachtrij, en controleert daarna de zichtbare weergave. Een kunstmatige opslagvertraging van 200 ms maakt deze situatie ook lokaal reproduceerbaar. De asynchrone IndexedDB-controle wordt vanuit Node expliciet afgewacht; een Promise wordt niet als een direct geslaagd wachtpredicaat behandeld. Daarnaast controleert de test dat export zelf geen nieuwe opslagaanroepen start. De volledige vergelijking van de opslag vóór en na export, inclusief revisie, instellingen en sessies, blijft behouden. Er worden geen assertions overgeslagen of gegevens buiten de vergelijking gehouden. De app- en opslagcode zijn voor deze reparatie ongewijzigd.
+
+## Reparatie van de afbeeldingscontrole
+
+De offline illustratie werd direct na het openen van de uitleg gecontroleerd. Ook een afbeelding uit de serviceworkercache wordt asynchroon opgehaald en gedecodeerd. De test wacht nu op een zichtbare afbeelding én op `img.decode()`, en controleert daarna nog steeds `complete` en een positieve natuurlijke breedte. Bovendien wordt gecontroleerd dat de echte SVG als geslaagde respons in de offlinecache aanwezig is.
+
+Een afzonderlijke browsercontext houdt de echte SVG-aanvraag bewust tegen. De proef bevestigt eerst dat de afbeelding nog niet geladen is, geeft de aanvraag vrij en verifieert dat dezelfde laadcontrole slaagt. Deze context gebruikt geen serviceworker; de normale offlineproef blijft apart met de echte serviceworker uitgevoerd. Ontbrekende of ongeldige afbeeldingen blijven de test laten falen. De app en de offlinecachelogica zijn niet gewijzigd.

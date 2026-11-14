@@ -15,6 +15,49 @@ const watch=p=>p.on('pageerror',e=>errors.push(e.message));
 const card=(p,id)=>p.locator(`[data-exercise-id="${id}"]`);
 const state=p=>p.evaluate(async()=>{const {LocalStore}=await import('./storage.mjs');const store=await new LocalStore().open();try{return await store.load()}finally{store.db.close()}});
 const settled=p=>p.waitForTimeout(350);
+async function selectStoredTheme(p, theme) {
+ await p.locator('#theme').selectOption(theme);
+ await p.locator('#theme').blur();
+ // Poll from Node: waitForFunction in Playwright 1.56 treats an async predicate
+ // as a truthy Promise, even when that Promise eventually resolves to false.
+ const deadline=Date.now()+10000;
+ let stored;
+ do {
+  stored=await p.evaluate(async()=>{
+   const {LocalStore}=await import('./storage.mjs');
+   const store=await new LocalStore().open();
+   try { return {theme:(await store.load()).settings.theme,pending:window.themeWritesPending}; }
+   finally { store.db.close(); }
+  });
+  if(stored.theme===theme && stored.pending===0){
+   assert.equal(await p.locator('html').getAttribute('data-theme'),theme);
+   return;
+  }
+  await p.waitForTimeout(25);
+ } while(Date.now()<deadline);
+ assert.fail(`Thema ${theme} niet volledig opgeslagen: ${JSON.stringify(stored)}`);
+}
+async function illustrationReady(p) {
+ const image=p.locator('.exercise-illustration img');
+ await image.waitFor({state:'visible'});
+ // Locator.evaluate awaits decode's Promise. A cached response still loads asynchronously.
+ await image.evaluate(img=>img.decode());
+ assert.ok(await image.evaluate(img=>img.complete&&img.naturalWidth>0));
+}
+async function checkDelayedIllustration(browser, base) {
+ const isolated=await browser.newContext({serviceWorkers:'block'});
+ let release,requested;
+ const gate=new Promise(resolve=>release=resolve),requestSeen=new Promise(resolve=>requested=resolve);
+ try {
+  await isolated.route('**/standing-calf.svg',async route=>{requested();await gate;await route.continue();});
+  const page=await isolated.newPage();
+  await page.setContent(`<figure class="exercise-illustration"><img src="${new URL('standing-calf.svg',base)}" width="520" height="265"></figure>`,{waitUntil:'domcontentloaded'});
+  await requestSeen;
+  assert.equal(await page.locator('img').evaluate(img=>img.complete),false);
+  const ready=illustrationReady(page);
+  release();await ready;
+ } finally { release?.();await isolated.close(); }
+}
 async function pageReady(p){await p.locator('h1').waitFor();}
 async function finish(p){for(const id of await p.locator('.exercise-card').evaluateAll(elements=>elements.map(e=>e.dataset.exerciseCard))){const checkbox=p.locator(`[data-exercise-card="${id}"] .set-check`);if(await checkbox.getAttribute('aria-pressed')==='false'){await checkbox.click();await settled(p);}}assert.ok(await p.locator('.checklist-complete').isVisible());await p.locator('[data-action="finish"]').click();await settled(p);}
 async function settings(p){await p.locator('.mobile-nav [data-page="more"]').click();await p.locator('.more-list [data-page="settings"]').click();}
@@ -63,10 +106,19 @@ try{
  const ids=await p.locator('.library-item').evaluateAll(elements=>elements.map(e=>e.dataset.exercise));
  for(const id of ids){await p.locator(`.library-item[data-exercise="${id}"]`).click();assert.ok(await p.locator('#modal .instruction').count()>=5);await p.locator('#modal [data-action="close-modal"]').first().click();}
  await p.locator('[data-filter="libraryFilter"]').selectOption('1:lower_a');assert.equal(await p.locator('.library-item:visible').count(),8);
- await settings(p);await p.locator('#theme').selectOption('dark');assert.equal(await p.locator('html').getAttribute('data-theme'),'dark');await p.locator('#theme').selectOption('light');
+ await settings(p);
+ // Make this race reproducible on fast local machines as well as CI.
+ await p.evaluate(async()=>{
+  const {LocalStore}=await import('./storage.mjs'),save=LocalStore.prototype.save;
+  window.themeWritesPending=0;window.themeWritesStarted=0;
+  window.restoreThemeSave=()=>{LocalStore.prototype.save=save;};
+  LocalStore.prototype.save=async function(...args){window.themeWritesPending++;window.themeWritesStarted++;try{await new Promise(resolve=>setTimeout(resolve,200));return await save.apply(this,args);}finally{window.themeWritesPending--;}};
+ });
+ await selectStoredTheme(p,'dark');await selectStoredTheme(p,'light');
+ const writesBeforeExport=await p.evaluate(()=>window.themeWritesStarted);
  const beforeExport=await state(p),analysis=await download(p,'export-analysis'),report=JSON.parse(analysis.text);assert.equal(report.format,'ritme-progress-analysis');assert.equal(report.sessions.length,4);assert.equal(report.summary.recordedSets,5);
  assert.equal(report.exercises.find(e=>e.exerciseId==='barbell_bent_over_row').personalRecord.kg,40);assert.equal(report.exercises.find(e=>e.exerciseId==='conventional_deadlift').personalRecord.kg,80);
- const backup=await download(p,'export');assert.equal(JSON.parse(backup.text).format,'ritme-backup');const csv=await download(p,'csv');assert.match(csv.text,/barbell_bent_over_row/);assert.match(csv.text,/conventional_deadlift/);assert.deepEqual(await state(p),beforeExport);
+ const backup=await download(p,'export');assert.equal(JSON.parse(backup.text).format,'ritme-backup');const csv=await download(p,'csv');assert.match(csv.text,/barbell_bent_over_row/);assert.match(csv.text,/conventional_deadlift/);assert.deepEqual(await state(p),beforeExport);assert.equal(await p.evaluate(()=>window.themeWritesStarted),writesBeforeExport);await p.evaluate(()=>{window.restoreThemeSave();delete window.restoreThemeSave;});
  await p.locator('[data-action="choose-import"]').click();await p.locator('#import-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backup.text)});await p.locator('[data-action="confirm-import"]').click();await settled(p);assert.equal((await state(p)).sessions.length,4);
  await p.locator('[data-action="safety"]').click();await p.locator('#modal [data-action="close-modal"]').first().click();await p.locator('[data-action="install"]').click();await p.locator('#modal [data-action="close-modal"]').first().click();
  const originalAnchor=(await state(p)).settings.anchorMonday;await p.locator('#week-anchor').fill('2026-11-15');await p.locator('[data-action="save-anchor"]').click();assert.equal((await state(p)).settings.anchorMonday,originalAnchor);
@@ -81,7 +133,8 @@ try{
  await p.locator('[data-action="session-options"]').click();await p.locator('[data-action="delete-session"]').click();await p.locator('[data-action="confirm-delete-session"]').click();await settled(p);assert.equal((await state(p)).sessions.some(s=>s.id==='legacy-fixture'),false);
  await settings(p);await p.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(recovery.text)});await p.locator('[data-action="confirm-import"]').click();await settled(p);assert.equal((await state(p)).sessions.length,5);
  await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await p.reload();await pageReady(p);await settings(p);const offlineReport=await download(p,'export-analysis');assert.equal(JSON.parse(offlineReport.text).sessions.length,5);
- await p.locator('.mobile-nav [data-page="library"]').click();await p.locator('.library-item[data-exercise="standing_calf"]').click();assert.ok(await p.locator('.exercise-illustration img').evaluate(img=>img.complete&&img.naturalWidth>0));await p.locator('#modal [data-action="close-modal"]').first().click();
+ await p.locator('.mobile-nav [data-page="library"]').click();await p.locator('.library-item[data-exercise="standing_calf"]').click();await illustrationReady(p);assert.ok(await p.evaluate(async()=>{const response=await caches.match(new URL('./standing-calf.svg',location.href));return response?.ok&&(await response.text()).includes('<svg');}));await p.locator('#modal [data-action="close-modal"]').first().click();
  await p.locator('.mobile-nav [data-page="home"]').click();await p.screenshot({path:process.env.RITME_SCREENSHOT||'/tmp/ritme22-mobile.png',fullPage:true});await p.screenshot({path:'/tmp/ritme22-viewport.png'});assert.deepEqual(errors,[]);
+ await checkDelayedIllustration(context.browser(),url);
  console.log('Browser v2.2 geslaagd: snelle plus/min, dubbel-tap zonder zoom, checklist, herstart, vier trainingen/keuze, PR-scheiding, alle oefendetails, navigatie, thema, anker, downloads/import, opslagfout en offline export.');
 }finally{await context?.close();server?.kill();await rm(profile,{recursive:true,force:true});}
