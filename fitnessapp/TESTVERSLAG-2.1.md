@@ -1,5 +1,7 @@
 # Ritme 2.1 — verificatie
 
+> Historisch testverslag. De oefenillustratie en de bijbehorende laadtest zijn op verzoek verwijderd in de designupdate. De huidige tekstgidsen en controles staan in [TESTVERSLAG-DESIGN.md](TESTVERSLAG-DESIGN.md).
+
 ## Uitgevoerd
 
 - `npm test`: 75 tests geslaagd, 0 mislukt/overgeslagen. De bestaande rotatie-, back-up-, statistiek- en Pages-tests blijven actief. Zes nieuwe tests controleren één beste set, onafhankelijk afvinken, stabiele volgorde, heropenen, geldige afstand/tijd/lichaamsgewicht, behoud van historische losse sets/notities, PR bij gelijke gewichten en validatie van nieuwe optionele velden.
