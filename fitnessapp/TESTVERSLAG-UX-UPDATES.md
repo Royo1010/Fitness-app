@@ -1,5 +1,7 @@
 # Gerichte UX-update en veilige PWA-updates
 
+Vervolg: de Dark Mode- en bovenrandcorrectie staat in [TESTVERSLAG-DARK-MODE.md](TESTVERSLAG-DARK-MODE.md).
+
 Deze wijziging verfijnt de bestaande Ritme 2.2-app. Het kleurenpalet, de navigatie, spiergroeplabels en grote invoervelden blijven behouden.
 
 ## Gewijzigde bestanden
