@@ -6,6 +6,7 @@ import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createServer} from 'node:net';
 import {testUpdates} from './test-updates.mjs';
+import {testAppearance} from './test-appearance.mjs';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const profile=await mkdtemp(path.join(tmpdir(),'ritme22-browser-'));
 const legacyProgram=JSON.parse(await readFile(new URL('../tests/fixtures/program-v2.1.json',import.meta.url)));
@@ -188,6 +189,7 @@ try{
  assert.ok(await p.evaluate(async()=>Boolean((await caches.match(new URL('./exercise-guides.mjs',location.href)))?.ok)));
  await p.locator('#modal [data-action="close-modal"]').first().click();
  await p.locator('.mobile-nav [data-page="home"]').click();await p.screenshot({path:process.env.RITME_SCREENSHOT||'/tmp/ritme22-mobile.png',fullPage:true});await p.screenshot({path:'/tmp/ritme22-viewport.png'});assert.deepEqual(errors,[]);
+ await testAppearance(context.browser(),url,contrast);
  await testUpdates(context.browser());
  console.log('Browser v2.2 geslaagd: snelle plus/min, dubbel-tap zonder zoom, checklist, herstart, vier trainingen/keuze, PR-scheiding, 37 tekstgidsen zonder oefenbeelden, spiergroeplabels, 320–1024px, AA-kleurcontrasten licht/donker, navigatie, thema, anker, downloads/import, opslagfout en offline export.');
 }finally{await context?.close();server?.kill();await rm(profile,{recursive:true,force:true});}
