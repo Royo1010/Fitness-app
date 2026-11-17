@@ -2,6 +2,10 @@
 
 > Opvolging: de gebruiker meldde dat build `a13373ed428f` op de iPhone nog steeds vervaagt. De eerdere Chromium-proef bewees de afdekking en afwezigheid van CSS-filters, niet het verdwijnen van het native iOS-effect. De structurele scrollcorrectie en nieuwe tests staan in [TESTVERSLAG-IOS-SCROLL.md](TESTVERSLAG-IOS-SCROLL.md).
 
+> Ook de opvolgende build `a2363bc48019` vertoont volgens de gebruiker startwaas.
+> Het nieuwste vergelijkende onderzoek en de correctie staan in
+> [TESTVERSLAG-IOS-OPSTART.md](TESTVERSLAG-IOS-OPSTART.md).
+
 ## Gecontroleerde bron
 
 Voor wijzigingen is `origin/main` opnieuw opgehaald en vergeleken met de checkout:
