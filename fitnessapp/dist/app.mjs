@@ -43,8 +43,8 @@ const rangeFmt = w => `${dateFmt(w.monday)} – ${dateFmt(w.sunday, { year: 'num
 const $ = s => document.querySelector(s);
 const modal = $('#modal');
 const app = $('#app');
-// The viewport below the system safe-area owns page scrolling, not the document.
-const scrollPageTo = (top = 0) => { app.scrollTop = top; };
+// Navigation and in-place updates share the native document scroll position.
+const scrollPageTo = (top = 0) => { window.scrollTo(0, top); };
 let program, state = emptyState(), database;
 let view = { page: 'home', weekOffset: 0, statsExercise: 'flat_db_press', period: '90', chartMetric: 'average', historyPeriod: 'all', libraryFilter: 'all', librarySearch: '', manualDay: null, manualWeek: null };
 let saveError = '', fatalError = '', saving = null, editVersion = 0, savedVersion = 0;
@@ -62,6 +62,7 @@ function toast(message) {
 function applyTheme() {
   const dark = state.settings.theme === 'dark' || (state.settings.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
 }
 function updateSaveStatus() {
   document.querySelectorAll('[data-save-status]').forEach(el => {
@@ -374,7 +375,7 @@ function dateDialog(mode = 'backdate') {
 function keepOpenRender() {
   const opens = [...document.querySelectorAll('[data-exercise-card][open]')].map(e => e.dataset.exerciseCard);
   const extras = [...document.querySelectorAll('.set-extra.open')].map(e => e.id);
-  const y = app.scrollTop;
+  const y = window.scrollY;
   render();
   document.querySelectorAll('[data-exercise-card]').forEach(e => { e.open = opens.includes(e.dataset.exerciseCard); });
   extras.forEach(id => { const e = document.getElementById(id); if (e) e.classList.add('open'); });
@@ -630,7 +631,7 @@ try {
   try { database = await new LocalStore().open(); state = await database.load(); }
   catch (e) { fatalError = 'Je bestaande logboek wordt niet overschreven. Lokale opslag kan niet worden geopend: ' + e.message; }
   const page = location.hash.slice(1); if (!matchMedia('(display-mode: standalone)').matches && !navigator.standalone && ['home', 'schema', 'stats', 'library', 'more', 'history', 'settings'].includes(page)) view.page = page;
-  render(); scrollPageTo();
+  render();
   updates = new AppUpdates({ current: BUILD, container: navigator.serviceWorker, registration: navigator.serviceWorker?.register('./sw.js', { updateViaCache: 'none' }), save: saveBeforeUpdate, onChange: () => { renderUpdateStatus(); renderError(); } });
   updates.watch(); renderUpdateStatus();
 } catch (e) { app.innerHTML = `<div class="boot"><span class="brand-mark">r.</span><h2>Je training staat nog even stil.</h2><p>${esc(e.message)}</p><button class="btn primary" onclick="location.reload()">Opnieuw proberen</button></div>`; }

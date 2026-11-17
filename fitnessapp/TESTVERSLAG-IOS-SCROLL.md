@@ -1,5 +1,11 @@
 # iOS-bovenrand: structurele scrollcorrectie
 
+> Historisch verslag van build `a2363bc48019`. De gebruiker bevestigt juist op
+> deze build nog startwaas. De stilstaande root was geen bewezen vereiste en de
+> aparte app-scrollcontainer heeft het toestelprobleem niet opgelost. Zie de
+> vergelijking met de werkende marathon-apps en de opvolgende correctie in
+> [TESTVERSLAG-IOS-OPSTART.md](TESTVERSLAG-IOS-OPSTART.md).
+
 ## Versiecontrole en aanleiding
 
 Onderzocht vanaf de actuele `origin/main`: `47abe8ec6cee2cd9c1533f2a8715fd5307f16422`, merge van PR #9. Het eerdere `TESTVERSLAG-DARK-MODE.md` is gelezen. De door GitHub als geslaagd gemelde Pages-publicatie gebruikt deze commit:
