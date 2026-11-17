@@ -9,6 +9,7 @@
     "start": "node scripts/serve.mjs",
     "build": "node scripts/check.mjs",
     "test": "node --test tests/*.test.mjs",
+    "test:webkit-scroll": "node scripts/test-webkit-scroll.mjs",
     "lint": "node scripts/check.mjs",
     "build:pages": "npm run build && node scripts/build-pages.mjs"
   },

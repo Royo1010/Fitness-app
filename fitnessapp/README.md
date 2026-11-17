@@ -53,3 +53,7 @@ De GitHub Actions-workflow controleert pull requests met unit-, browser- en offl
 Onder Meer → Instellingen → App-updates staan de geïnstalleerde versie en het automatisch gemaakte buildnummer. Controleer op updates vergelijkt die build met de online publicatie; Update installeren bewaart openstaande invoer voordat de nieuwe serviceworker wordt geactiveerd en de app herlaadt. Bij geen internet, een onvolledige publicatie of een opslagfout verschijnt een melding en blijven gegevens bewaard. Gebruik geen browsergegevens wissen om de app bij te werken.
 
 Training en Schema tonen minder dubbele tekst; statussen op Schema volgen echte activiteit. Volledige wijzigingen, reproductie en de resterende iPhone-controle: [TESTVERSLAG-UX-UPDATES.md](TESTVERSLAG-UX-UPDATES.md).
+
+## Begrensd scrollvlak op iPhone
+
+De documentpagina scrollt niet meer. De bestaande appcontainer scrollt zelf en begint onder de bovenste safe-area; inhoud wordt daar echt afgeknipt. De eerdere afdekkende pseudo-laag is verwijderd. Navigeren, pauzeren/hervatten en dialogen gebruiken het app-scrollvlak. Onderzoek, WebKitGTK-/Chromium-controles en de nog noodzakelijke fysieke iPhone-proef: [TESTVERSLAG-IOS-SCROLL.md](TESTVERSLAG-IOS-SCROLL.md).

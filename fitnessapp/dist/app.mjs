@@ -43,6 +43,8 @@ const rangeFmt = w => `${dateFmt(w.monday)} – ${dateFmt(w.sunday, { year: 'num
 const $ = s => document.querySelector(s);
 const modal = $('#modal');
 const app = $('#app');
+// The viewport below the system safe-area owns page scrolling, not the document.
+const scrollPageTo = (top = 0) => { app.scrollTop = top; };
 let program, state = emptyState(), database;
 let view = { page: 'home', weekOffset: 0, statsExercise: 'flat_db_press', period: '90', chartMetric: 'average', historyPeriod: 'all', libraryFilter: 'all', librarySearch: '', manualDay: null, manualWeek: null };
 let saveError = '', fatalError = '', saving = null, editVersion = 0, savedVersion = 0;
@@ -372,11 +374,11 @@ function dateDialog(mode = 'backdate') {
 function keepOpenRender() {
   const opens = [...document.querySelectorAll('[data-exercise-card][open]')].map(e => e.dataset.exerciseCard);
   const extras = [...document.querySelectorAll('.set-extra.open')].map(e => e.id);
-  const y = window.scrollY;
+  const y = app.scrollTop;
   render();
   document.querySelectorAll('[data-exercise-card]').forEach(e => { e.open = opens.includes(e.dataset.exerciseCard); });
   extras.forEach(id => { const e = document.getElementById(id); if (e) e.classList.add('open'); });
-  window.scrollTo(0, y);
+  scrollPageTo(y);
 }
 async function finishTraining(s) {
   const previous = { status: s.status, completedAt: s.completedAt, updatedAt: s.updatedAt };
@@ -384,7 +386,7 @@ async function finishTraining(s) {
   if (!await persist()) { Object.assign(s, previous); renderError(); return; }
   modal.close();
   if (view.page === 'home') { view.sessionId = null; view.manualDay = null; view.manualWeek = null; view.draftKey = null; }
-  render(); window.scrollTo(0, 0); toast(view.page === 'home' ? trainingSelection(state.sessions, currentWeek()).next ? 'Afgerond. Je volgende training staat klaar.' : 'Je trainingsweek is compleet.' : 'Training afgerond.');
+  render(); scrollPageTo(); toast(view.page === 'home' ? trainingSelection(state.sessions, currentWeek()).next ? 'Afgerond. Je volgende training staat klaar.' : 'Je trainingsweek is compleet.' : 'Training afgerond.');
 }
 function refreshWorkoutProgress() {
   const ctx = workoutContext(), entries = ctx.entries;
@@ -395,7 +397,7 @@ function refreshWorkoutProgress() {
     el.value = inputNum(suggestedSet(e, si, recordedSessions(), ctx.s || ctx.draft)[field]);
   });
 }
-function go(page) { view.page = page; view.sessionId = null; view.browsing = false; view.fromHistory = false; if (page === 'home') { view.manualDay = null; view.manualWeek = null; view.draftKey = null; } location.hash = page; render(); window.scrollTo(0, 0); }
+function go(page) { view.page = page; view.sessionId = null; view.browsing = false; view.fromHistory = false; if (page === 'home') { view.manualDay = null; view.manualWeek = null; view.draftKey = null; } location.hash = page; render(); scrollPageTo(); }
 function download(name, content, type) {
   const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);
@@ -436,10 +438,10 @@ document.addEventListener('click', async event => {
     if (action === 'open-workout') {
       const w = trainingWeek(el.dataset.date), found = statusFor(el.dataset.day, w);
       view = { ...view, page: 'workout', day: el.dataset.day, variant: Number(el.dataset.variant), date: el.dataset.date, sessionId: found?.id, browsing: true, fromHistory: false, draftKey: null };
-      render(); window.scrollTo(0, 0); return;
+      render(); scrollPageTo(); return;
     }
-    if (action === 'open-session') { const found = state.sessions.find(s => s.id === el.dataset.id); if (!found) return; view = { ...view, page: 'workout', sessionId: found.id, day: found.day, variant: found.variant, date: found.date, browsing: true, fromHistory: true }; render(); window.scrollTo(0, 0); return; }
-    if (action === 'choose-workout') { const ctx = workoutContext(); if (ctx.week.monday !== currentWeek().monday || !ctx.week.official) return; view = { ...view, page: 'home', manualDay: ctx.day, manualWeek: ctx.week.monday, sessionId: ctx.s?.id, browsing: false, draftKey: null }; location.hash = 'home'; render(); window.scrollTo(0, 0); return; }
+    if (action === 'open-session') { const found = state.sessions.find(s => s.id === el.dataset.id); if (!found) return; view = { ...view, page: 'workout', sessionId: found.id, day: found.day, variant: found.variant, date: found.date, browsing: true, fromHistory: true }; render(); scrollPageTo(); return; }
+    if (action === 'choose-workout') { const ctx = workoutContext(); if (ctx.week.monday !== currentWeek().monday || !ctx.week.official) return; view = { ...view, page: 'home', manualDay: ctx.day, manualWeek: ctx.week.monday, sessionId: ctx.s?.id, browsing: false, draftKey: null }; location.hash = 'home'; render(); scrollPageTo(); return; }
     if (action === 'exercise-options') { exerciseOptions(ei); return; }
     if (action === 'step') {
       entry.exerciseCompleted ??= exerciseDone(entry);
@@ -461,7 +463,7 @@ document.addEventListener('click', async event => {
       const date = input.value, w = trainingWeek(date);
       if (el.dataset.mode === 'edit-date') { s.date = date; s.weekMonday = w.monday; s.updatedAt = new Date().toISOString(); await persist(); view.date = date; }
       else { if (!canRegister(date)) { toast('Voor deze referentiestart kun je alleen het voorbeeld bekijken.'); return; } view = { ...view, page: 'workout', sessionId: null, day: $('#log-day').value, variant: w.variant, date, browsing: false, draftKey: null }; }
-      modal.close(); render(); window.scrollTo(0, 0); return;
+      modal.close(); render(); scrollPageTo(); return;
     }
     if (action === 'set-more') { const extra = $(`#set-extra-${ei}-${si}`); extra.classList.toggle('open'); el.setAttribute('aria-expanded', String(extra.classList.contains('open'))); return; }
     if (action === 'complete-exercise' && entry) {
@@ -607,7 +609,7 @@ document.addEventListener('change', async event => {
 });
 document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.point')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); } });
 modal.addEventListener('cancel', e => { if (modal.dataset.locked === 'true') e.preventDefault(); });
-modal.addEventListener('close', () => { modalReturnFocus?.focus?.(); if (afterModal) { const callback = afterModal; afterModal = null; callback(); } });
+modal.addEventListener('close', () => { modalReturnFocus?.focus?.({ preventScroll: true }); if (afterModal) { const callback = afterModal; afterModal = null; callback(); } });
 window.addEventListener('hashchange', () => { const page = location.hash.slice(1); if (['home', 'schema', 'stats', 'library', 'more', 'history', 'settings'].includes(page) && page !== view.page) { go(page); } });
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; });
 window.addEventListener('online', updateSaveStatus);
@@ -628,7 +630,7 @@ try {
   try { database = await new LocalStore().open(); state = await database.load(); }
   catch (e) { fatalError = 'Je bestaande logboek wordt niet overschreven. Lokale opslag kan niet worden geopend: ' + e.message; }
   const page = location.hash.slice(1); if (!matchMedia('(display-mode: standalone)').matches && !navigator.standalone && ['home', 'schema', 'stats', 'library', 'more', 'history', 'settings'].includes(page)) view.page = page;
-  render(); window.scrollTo(0, 0);
+  render(); scrollPageTo();
   updates = new AppUpdates({ current: BUILD, container: navigator.serviceWorker, registration: navigator.serviceWorker?.register('./sw.js', { updateViaCache: 'none' }), save: saveBeforeUpdate, onChange: () => { renderUpdateStatus(); renderError(); } });
   updates.watch(); renderUpdateStatus();
 } catch (e) { app.innerHTML = `<div class="boot"><span class="brand-mark">r.</span><h2>Je training staat nog even stil.</h2><p>${esc(e.message)}</p><button class="btn primary" onclick="location.reload()">Opnieuw proberen</button></div>`; }
