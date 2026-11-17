@@ -51,7 +51,7 @@ try {
     await waitFor(()=>Boolean(document.querySelector('.boot')) && window.startupFrames?.length > 0);
     const frames = await evaluate(()=>window.startupFrames);
     assert.ok(frames.length > 0,'WebKit heeft vóór interactie startframes gemeten');
-    for (const frame of frames) assertStartupSurface(frame,theme,47);
+    for (const frame of frames) assertStartupSurface(frame,'boot',47);
     assert.deepEqual(await evaluate(()=>window.startupScrollCalls),[]);
     proxy.release(); await waitFor(()=>Boolean(document.querySelector('.exercise-card')));
     const saved = await asyncEvaluate(async()=>{
@@ -65,7 +65,7 @@ try {
     proxy.hold(); await command('POST','/refresh',{});
     await waitFor(()=>Boolean(document.querySelector('.boot')) && window.startupFrames?.length > 0);
     const reloadedFrames = await evaluate(()=>window.startupFrames);
-    for (const frame of reloadedFrames) assertStartupSurface(frame,theme,47);
+    for (const frame of reloadedFrames) assertStartupSurface(frame,'boot',47);
     proxy.release(); await waitFor(()=>Boolean(document.querySelector('.exercise-card')));
     assertStartupSurface(await evaluate(()=>window.startupSurface()),saved.settings.theme,47);
     assert.deepEqual(await evaluate(()=>window.startupScrollCalls),[]);
@@ -92,11 +92,13 @@ try {
       for (const [page, selector] of [['home','.exercise-name'],['schema','.schema-row strong'],['stats','h1'],['library','.library-item h3'],['more','.more-list strong']]) {
         await click(`.mobile-nav [data-page="${page}"]`);
         await evaluate(theme => document.documentElement.dataset.theme = theme, theme);
-        assert.equal(await evaluate(() => scrollY), 0, 'Navigeren reset de document-scrollpositie');
+        assert.equal(await evaluate(() => document.querySelector('#app').scrollTop), 0, 'Navigeren reset het app-scrollvlak');
         for (const offset of [2,-3]) {
           await evaluate(positionAtEdge, {selector,offset});
           assertScrollLayout(await evaluate(scrollLayout, {selector}), top);
         }
+        await evaluate(() => {window.scrollTo(0,400);document.scrollingElement.scrollTop=400;});
+        assertScrollLayout(await evaluate(scrollLayout,{selector}),top);
         if (page === 'home') await screenshot(`/tmp/ritme-webkit-scroll-${theme}-${top}.png`);
       }
       await click('.more-list [data-page="settings"]');
@@ -106,16 +108,16 @@ try {
       await click('.mobile-nav [data-page="library"]');
       await evaluate(theme => document.documentElement.dataset.theme = theme, theme);
       await click('.library-item');
-      const backgroundY = await evaluate(() => scrollY);
+      const backgroundY = await evaluate(() => document.querySelector('#app').scrollTop);
       await evaluate(() => { document.querySelector('#modal').scrollTop = 500; });
       const modal = await evaluate(() => {
         const el = document.querySelector('#modal'), header = el.querySelector('.modal-head');
         return { top:el.getBoundingClientRect().top, header:header.getBoundingClientRect().top, scroll:el.scrollTop, root:scrollY, blur:getComputedStyle(el,'::backdrop').backdropFilter || 'none' };
       });
       assert.ok(modal.top >= top && modal.header >= top); assert.ok(modal.scroll > 0);
-      assert.equal(modal.root,backgroundY); assert.equal(modal.blur,'none');
+      assert.equal(modal.root,0); assert.equal(modal.blur,'none');
       await click('#modal [data-action="close-modal"]');
-      assert.equal(await evaluate(() => scrollY), backgroundY);
+      assert.equal(await evaluate(() => document.querySelector('#app').scrollTop), backgroundY);
     }
   }
   await click('.mobile-nav [data-page="home"]');
@@ -126,12 +128,12 @@ try {
     await evaluate(positionAtEdge,{selector:'.exercise-name',offset:-3});
     assertScrollLayout(await evaluate(scrollLayout,{selector:'.exercise-name'}),47);
   }
-  await evaluate(() => { window.scrollTo(0,0);document.querySelector('#app').focus({preventScroll:true}); });
+  await evaluate(() => {const app=document.querySelector('#app');app.scrollTop=0;app.focus({preventScroll:true});});
   await command('POST','/actions',{actions:[{type:'key',id:'keyboard',actions:[{type:'keyDown',value:'\uE00F'},{type:'keyUp',value:'\uE00F'}]}]});
-  await waitFor(() => scrollY > 0);
-  assert.equal(await evaluate(() => document.querySelector('#app').scrollTop),0);
+  await waitFor(() => document.querySelector('#app').scrollTop > 0);
+  assert.equal(await evaluate(() => scrollY),0);
   await evaluate(() => { document.querySelector('input[data-set-field]:last-of-type')?.focus(); });
-  assert.equal(await evaluate(() => document.querySelector('#app').scrollTop),0);
+  assert.equal(await evaluate(() => scrollY),0);
   assert.deepEqual(await readState(),before,'Weergave-/scrollproef verandert geen opgeslagen gegevens');
-  console.log(JSON.stringify({ engine:'WebKitGTK', capabilities:result.capabilities, startup, actualViewport, viewports, build, checks:'startframes via testproxy; nul startup-scrollaanroepen; native document-scrolling; viewport-rand; 0/47px; zes schermen; licht/donker; dialoog; toetsenbord/focus; resize; gegevensbehoud', limitation:'Linux WebKitGTK; geen native iOS Safari of geïnstalleerde iPhone-PWA. GTK kan een minimale vensterbreedte afdwingen.' }));
+  console.log(JSON.stringify({ engine:'WebKitGTK', capabilities:result.capabilities, startup, actualViewport, viewports, build, checks:'startframes via testproxy; nul startup-scrollaanroepen; herstelde vaste root en app-scrollvlak; clipping; 0/47px; zes schermen; licht/donker; dialoog; toetsenbord/focus; resize; gegevensbehoud', limitation:'Linux WebKitGTK; geen native iOS Safari of geïnstalleerde iPhone-PWA. GTK kan een minimale vensterbreedte afdwingen.' }));
 } finally { if (session) await command('DELETE',''); if (proxy) await proxy.close(); }
