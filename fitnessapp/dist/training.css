@@ -331,3 +331,5 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--focus)}
 .app-updates [data-phase=error]{color:var(--ink)}
 @media(max-width:360px){.schema-home .schema-row{padding:12px 10px;gap:8px;grid-template-columns:25px minmax(0,1fr) auto 12px}.schema-home .schema-index{width:25px;height:30px}.schema-home .schema-row strong{font-size:14px}.schema-home .schema-row small{font-size:10px}.schema-week-picker>h2{font-size:14px}.schema-week-picker .icon-btn{width:44px}.v2 .finish-bar{grid-template-columns:46px minmax(0,1fr);gap:8px;padding:10px}.v2 .finish-bar .pause-training{width:46px}.v2 .finish-bar>.btn{font-size:12px}}
 @media(max-width:800px){dialog{max-height:min(92dvh,calc(100dvh - var(--safe-top) - 8px))}}
+/* Keep the exact header spacing while hiding the week line in Training. */
+.training-home .training-weekline{visibility:hidden}
