@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {positionAtEdge,scrollLayout,assertScrollLayout} from './scroll-layout.mjs';
 
 export async function testAppearance(browser, url, contrast) {
   // A separate context: never inspect or change a person's browser storage.
@@ -15,7 +16,7 @@ export async function testAppearance(browser, url, contrast) {
     const before = await savedState();
     const cdp = await context.newCDPSession(page);
     for (const top of [0, 47]) {
-      // Override the actual env() value, not the CSS being tested.
+      // Real env() override in Chromium. This cannot emulate the native iOS scroll-edge effect.
       await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { top, bottom: 34, left: 0, right: 0 } });
       for (const theme of ['light', 'dark']) {
         // Inspect each palette without persisting a preference. The main browser
@@ -49,6 +50,8 @@ export async function testAppearance(browser, url, contrast) {
         for (const [view, target] of [['home', '.exercise-name'], ['schema', '.schema-row strong'], ['stats', 'h1'], ['library', '.library-item h3'], ['more', '.more-list strong']]) {
           await page.locator(`.mobile-nav [data-page="${view}"]`).click();
           await paint();
+          assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),0,'Navigeren start bovenaan het eigen scrollvlak');
+          if(view==='home')assert.ok(Math.abs((await page.locator('.training-weekline').boundingBox()).y-top-22)<1,'Alleen de bestaande 22px ruimte onder de statusbalk');
           await checkEdge(page, target, top);
           if (view === 'home') await page.screenshot({ path: `/tmp/ritme-edge-${theme}-${top}.png` });
         }
@@ -57,6 +60,7 @@ export async function testAppearance(browser, url, contrast) {
         await checkEdge(page, '.settings-grid h2', top);
         await page.locator('.mobile-nav [data-page="library"]').click();
         await paint();
+        const backgroundY=await page.locator('#app').evaluate(el=>el.scrollTop);
         await page.locator('.library-item').first().click();
         const modal = await page.locator('#modal').evaluate(el => {
           const backdrop = getComputedStyle(el, '::backdrop');
@@ -68,38 +72,48 @@ export async function testAppearance(browser, url, contrast) {
         assert.equal(modal.image, 'none');
         assert.equal(modal.headerBlur, 'none');
         assert.equal(modal.headerImage, 'none');
+        await page.locator('#modal').evaluate(el=>{el.scrollTop=el.scrollHeight/2;});
+        assert.equal(await page.evaluate(()=>scrollY),0,'Dialoog scrollt zonder de documentpagina te verplaatsen');
+        assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),backgroundY,'Dialoog verplaatst de achterliggende app niet');
         await page.locator('#modal [data-action="close-modal"]').first().click();
+        assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),backgroundY,'Sluiten behoudt de app-scrollpositie');
       }
     }
+    await page.locator('.mobile-nav [data-page="home"]').click();
+    for(const viewport of [{width:320,height:568},{width:390,height:500},{width:844,height:390},{width:390,height:844}]){
+      await page.setViewportSize(viewport);
+      await page.evaluate(positionAtEdge,{selector:'.exercise-name',offset:-3});
+      assertScrollLayout(await page.evaluate(scrollLayout,{selector:'.exercise-name'}),47);
+    }
+    await page.locator('#app').focus();
+    const keyboardY=await page.locator('#app').evaluate(el=>el.scrollTop);
+    await page.keyboard.press('PageDown');
+    await page.waitForFunction(y=>document.querySelector('#app').scrollTop>y,keyboardY);
+    assert.equal(await page.evaluate(()=>scrollY),0,'Toetsenbordscroll gebruikt uitsluitend het appvlak');
+    await page.locator('#app').evaluate(el=>{el.scrollTop=0;});
+    await cdp.send('Input.synthesizeScrollGesture',{x:380,y:600,yDistance:-300,speed:400,gestureSourceType:'touch'});
+    assert.ok(await page.locator('#app').evaluate(el=>el.scrollTop>0),'Aanraking scrollt het appvlak');
+    assert.equal(await page.evaluate(()=>scrollY),0,'Aanraking scrollt de documentpagina niet');
+    await page.locator('.mobile-nav [data-page="home"]').click();
+    const input=page.locator('input[data-set-field]').last();await input.focus();
+    assert.equal(await page.evaluate(()=>scrollY),0,'Focus op een laag invoerveld verplaatst de root niet');
+    await input.blur();
     assert.deepEqual(await savedState(), before, 'Weergavecontrole verandert geen opgeslagen gegevens');
-    console.log('Weergave geslaagd: licht/donker, invoercontrast, scherpe scrollrand, zes schermen, dialoog en 0/47px iPhone-safe-area.');
+    console.log('Scrollgeometrie geslaagd in Chromium: root stil, app begrensd op 0/47px, echte clipping, licht/donker, zes schermen, dialoog en gegevensbehoud. Geen bewijs van native iOS-pixels.');
   } finally {
     await context.close();
   }
 }
 
 async function checkEdge(page, selector, top) {
-  const target = page.locator(selector).first();
-  await target.evaluate((el, top) => { scrollTo(0, scrollY + el.getBoundingClientRect().top - top - 2); }, top);
-  const edge = await target.evaluate(el => {
-    const cap = getComputedStyle(document.body, '::before');
-    const rect = el.getBoundingClientRect();
-    const layers = [];
-    for (let node = el; node; node = node.parentElement) {
-      const style = getComputedStyle(node);
-      layers.push({ filter: style.filter, backdrop: style.backdropFilter, mask: style.maskImage, opacity: style.opacity });
+  for (const offset of [2, -3]) {
+    await page.evaluate(positionAtEdge,{selector,offset});
+    const layout=await page.evaluate(scrollLayout,{selector});
+    assertScrollLayout(layout,top);
+    if(offset<0 && layout.appScroll>0){
+      assert.ok(layout.targetTop<top&&layout.targetBottom>top,'Tekst kan gedeeltelijk buiten beeld vallen en wordt daar afgeknipt');
     }
-    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + Math.min(4, rect.height / 2));
-    return { capHeight: parseFloat(cap.height), capBackground: cap.backgroundColor, capImage: cap.backgroundImage, capFilter: cap.backdropFilter, capPosition: cap.position, capTop: cap.top, capPointer: cap.pointerEvents, targetTop: rect.top, hit: hit === el || el.contains(hit), layers };
-  });
-  assert.equal(edge.capHeight, top, 'Afdekking blijft precies binnen de safe-area');
-  assert.equal(edge.capImage, 'none');
-  assert.equal(edge.capFilter, 'none');
-  assert.match(edge.capBackground, /^rgb\(/, 'Afdekking is ondoorzichtig');
-  assert.equal(edge.capPosition, 'fixed');
-  assert.equal(edge.capTop, '0px');
-  assert.equal(edge.capPointer, 'none');
-  assert.ok(edge.targetTop >= top, 'Zichtbare tekst valt buiten de statusbalk');
-  assert.ok(edge.hit, 'Geen bediening of overlay over de zichtbare tekst');
-  for (const layer of edge.layers) assert.deepEqual(layer, { filter: 'none', backdrop: 'none', mask: 'none', opacity: '1' });
+  }
+  await page.evaluate(()=>{window.scrollTo(0,400);document.scrollingElement.scrollTop=400;});
+  assertScrollLayout(await page.evaluate(scrollLayout,{selector}),top);
 }

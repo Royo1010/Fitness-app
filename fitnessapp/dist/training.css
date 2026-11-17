@@ -150,7 +150,7 @@
 /* Ritme 2.1: één beste set en een rustige oefenchecklist. */
 .training-home .training-content{padding-top:max(18px,env(safe-area-inset-top));padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
 .v2 .exercise-list{gap:10px}
-.v2 .exercise-compact{scroll-margin-top:max(12px,env(safe-area-inset-top))}
+.v2 .exercise-compact{scroll-margin-top:0}
 .v2 .exercise-compact.exercise-done{background:var(--soft);border-color:transparent}
 .v2 .exercise-done .exercise-name{color:var(--muted)}
 .v2 .exercise-done .exercise-number{background:var(--green);color:var(--card)}
@@ -171,8 +171,18 @@
 button,a,input,select,textarea,[role=button]{touch-action:manipulation}
 button{-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html{overscroll-behavior-y:none;--safe-top:env(safe-area-inset-top,0px)}
-/* Only the status-bar inset is covered. No gradient or blur over visible text. */
-body::before{content:'';position:fixed;top:0;left:0;right:0;height:var(--safe-top);background:var(--bg);pointer-events:none;z-index:50}
+/* Keep document scrolling out of the iOS system region. Clip the real scroll
+   viewport below the inset instead of painting over a scrolling document. */
+html{height:100%;overflow:hidden}
+body{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden}
+@supports(height:100dvh){body{height:100dvh}}
+#app{position:absolute;top:var(--safe-top);right:0;bottom:0;left:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-padding-top:12px;scroll-padding-bottom:24px}
+#app:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.sidebar{top:var(--safe-top)}
+@media(max-width:800px){
+  #app{scroll-padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .v2 .topbar{height:56px;padding-top:0}
+}
 .effort-instruction{font-size:10px;color:var(--muted);padding:2px 15px 0;line-height:1.5}
 .exercise-choice{display:block;padding:8px 15px 0;font-size:10px;color:var(--muted)}
 .exercise-choice select{display:block;margin-top:5px;min-height:44px;font-size:16px;width:100%;background:var(--card)}
@@ -210,7 +220,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;height:var(--safe-to
 button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--focus)}
 .v2 .training-content{max-width:780px}
-.training-home .training-content{padding-top:calc(22px + var(--safe-top))}
+.training-home .training-content{padding-top:22px}
 .v2 .training-weekline{font-size:12px;margin-bottom:16px}
 .v2 .training-weekline .tag{font-size:11px;font-weight:600}
 .v2 .training-title-row h1{font-size:34px;letter-spacing:-1.2px}
@@ -304,7 +314,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--focus)}
 .v2 .finish-bar .pause-training{width:48px;height:48px;border:1px solid var(--line);background:var(--field);color:var(--green);border-radius:12px}
 .v2 .finish-bar .pause-training[aria-pressed=true]{background:var(--soft);border-color:var(--green)}
 .v2 .finish-bar>.btn{min-width:0;min-height:48px;font-size:13px;padding:10px 12px}
-.schema-home .content{padding-top:calc(22px + var(--safe-top))}
+.schema-home .content{padding-top:22px}
 .v2.schema-home .page-intro{margin-bottom:14px}
 .v2.schema-home h1{font-size:30px}
 .schema-home .schema-week-picker{padding:8px 0;gap:4px}

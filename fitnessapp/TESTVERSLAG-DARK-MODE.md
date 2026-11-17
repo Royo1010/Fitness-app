@@ -1,5 +1,7 @@
 # Ritme 2.2 — Dark Mode en scherpe bovenrand
 
+> Opvolging: de gebruiker meldde dat build `a13373ed428f` op de iPhone nog steeds vervaagt. De eerdere Chromium-proef bewees de afdekking en afwezigheid van CSS-filters, niet het verdwijnen van het native iOS-effect. De structurele scrollcorrectie en nieuwe tests staan in [TESTVERSLAG-IOS-SCROLL.md](TESTVERSLAG-IOS-SCROLL.md).
+
 ## Gecontroleerde bron
 
 Voor wijzigingen is `origin/main` opnieuw opgehaald en vergeleken met de checkout:
