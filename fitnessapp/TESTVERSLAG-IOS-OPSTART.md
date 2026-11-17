@@ -1,5 +1,11 @@
 # Ritme: startwaas vergelijken met de werkende marathon-PWA's
 
+> Achterhaald door toestelfeedback: na PR #11 bleef de waas permanent zichtbaar.
+> De overeenkomst met de marathon-apps bleek onvoldoende onderbouwing voor deze
+> wijziging. De productieonderdelen worden teruggedraaid volgens de expliciete
+> terugvalopdracht; zie [HERSTEL-PR11.md](HERSTEL-PR11.md). De onderstaande
+> geslaagde Linux-proeven hebben de native iPhone-waas niet gereproduceerd.
+
 ## Gecontroleerde versies
 
 Onderzocht op 17 november 2026, vanaf de actuele `origin/main`:

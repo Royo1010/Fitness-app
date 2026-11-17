@@ -50,7 +50,7 @@ export async function testAppearance(browser, url, contrast) {
         for (const [view, target] of [['home', '.exercise-name'], ['schema', '.schema-row strong'], ['stats', 'h1'], ['library', '.library-item h3'], ['more', '.more-list strong']]) {
           await page.locator(`.mobile-nav [data-page="${view}"]`).click();
           await paint();
-          assert.equal(await page.evaluate(()=>scrollY),0,'Navigeren start bovenaan het document');
+          assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),0,'Navigeren start bovenaan het eigen scrollvlak');
           if(view==='home')assert.ok(Math.abs((await page.locator('.training-weekline').boundingBox()).y-top-22)<1,'Alleen de bestaande 22px ruimte onder de statusbalk');
           await checkEdge(page, target, top);
           if (view === 'home') await page.screenshot({ path: `/tmp/ritme-edge-${theme}-${top}.png` });
@@ -60,7 +60,7 @@ export async function testAppearance(browser, url, contrast) {
         await checkEdge(page, '.settings-grid h2', top);
         await page.locator('.mobile-nav [data-page="library"]').click();
         await paint();
-        const backgroundY=await page.evaluate(()=>scrollY);
+        const backgroundY=await page.locator('#app').evaluate(el=>el.scrollTop);
         await page.locator('.library-item').first().click();
         const modal = await page.locator('#modal').evaluate(el => {
           const backdrop = getComputedStyle(el, '::backdrop');
@@ -73,10 +73,10 @@ export async function testAppearance(browser, url, contrast) {
         assert.equal(modal.headerBlur, 'none');
         assert.equal(modal.headerImage, 'none');
         await page.locator('#modal').evaluate(el=>{el.scrollTop=el.scrollHeight/2;});
-        assert.equal(await page.evaluate(()=>scrollY),backgroundY,'Dialoog scrollt zonder de documentpagina te verplaatsen');
-        assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),0,'Dialoog introduceert geen app-scrollvlak');
+        assert.equal(await page.evaluate(()=>scrollY),0,'Dialoog scrollt zonder de documentpagina te verplaatsen');
+        assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),backgroundY,'Dialoog verplaatst de achterliggende app niet');
         await page.locator('#modal [data-action="close-modal"]').first().click();
-        assert.equal(await page.evaluate(()=>scrollY),backgroundY,'Sluiten behoudt de app-scrollpositie');
+        assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),backgroundY,'Sluiten behoudt de app-scrollpositie');
       }
     }
     await page.locator('.mobile-nav [data-page="home"]').click();
@@ -86,21 +86,20 @@ export async function testAppearance(browser, url, contrast) {
       assertScrollLayout(await page.evaluate(scrollLayout,{selector:'.exercise-name'}),47);
     }
     await page.locator('#app').focus();
-    const keyboardY=await page.evaluate(()=>scrollY);
+    const keyboardY=await page.locator('#app').evaluate(el=>el.scrollTop);
     await page.keyboard.press('PageDown');
-    await page.waitForFunction(y=>scrollY>y,keyboardY);
-    assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),0,'Toetsenbordscroll gebruikt het document');
-    await page.evaluate(()=>window.scrollTo(0,0));
+    await page.waitForFunction(y=>document.querySelector('#app').scrollTop>y,keyboardY);
+    assert.equal(await page.evaluate(()=>scrollY),0,'Toetsenbordscroll gebruikt uitsluitend het appvlak');
+    await page.locator('#app').evaluate(el=>{el.scrollTop=0;});
     await cdp.send('Input.synthesizeScrollGesture',{x:380,y:600,yDistance:-300,speed:400,gestureSourceType:'touch'});
-    assert.ok(await page.evaluate(()=>scrollY>0),'Aanraking scrollt het document');
-    assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),0,'Aanraking maakt geen tweede scrollpositie');
+    assert.ok(await page.locator('#app').evaluate(el=>el.scrollTop>0),'Aanraking scrollt het appvlak');
+    assert.equal(await page.evaluate(()=>scrollY),0,'Aanraking scrollt de documentpagina niet');
     await page.locator('.mobile-nav [data-page="home"]').click();
     const input=page.locator('input[data-set-field]').last();await input.focus();
-    assert.ok(await page.evaluate(()=>scrollY>0),'Focus op lage invoer gebruikt het document');
-    assert.equal(await page.locator('#app').evaluate(el=>el.scrollTop),0);
+    assert.equal(await page.evaluate(()=>scrollY),0,'Focus op een laag invoerveld verplaatst de root niet');
     await input.blur();
     assert.deepEqual(await savedState(), before, 'Weergavecontrole verandert geen opgeslagen gegevens');
-    console.log('Scrollgeometrie geslaagd in Chromium: native document-scroll, één 0/47px inset, viewport-rand, licht/donker, zes schermen, dialoog en gegevensbehoud. Geen bewijs van native iOS-pixels.');
+    console.log('Scrollgeometrie geslaagd in Chromium: root stil, app begrensd op 0/47px, echte clipping, licht/donker, zes schermen, dialoog en gegevensbehoud. Geen bewijs van native iOS-pixels.');
   } finally {
     await context.close();
   }
@@ -111,8 +110,10 @@ async function checkEdge(page, selector, top) {
     await page.evaluate(positionAtEdge,{selector,offset});
     const layout=await page.evaluate(scrollLayout,{selector});
     assertScrollLayout(layout,top);
-    if(offset<0 && layout.rootTop>0){
-      assert.ok(layout.targetTop<0&&layout.targetBottom>0,'Tekst kan gedeeltelijk buiten de documentviewport vallen');
+    if(offset<0 && layout.appScroll>0){
+      assert.ok(layout.targetTop<top&&layout.targetBottom>top,'Tekst kan gedeeltelijk buiten beeld vallen en wordt daar afgeknipt');
     }
   }
+  await page.evaluate(()=>{window.scrollTo(0,400);document.scrollingElement.scrollTop=400;});
+  assertScrollLayout(await page.evaluate(scrollLayout,{selector}),top);
 }
